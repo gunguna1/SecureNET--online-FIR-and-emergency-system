@@ -1,5 +1,5 @@
 import express from 'express';
-import { createDispatch, respondToDispatch, getMyDispatches, getAllActiveIncidents } from './dispatch.controller';
+import { createDispatch, respondToDispatch, getMyDispatches, getAllActiveIncidents, getAvailableUnitsCount } from './dispatch.controller';
 import { protect, authorize } from '../../middleware/auth';
 import { Role } from '../../models/User';
 
@@ -13,5 +13,6 @@ router.patch('/:id/respond', authorize(Role.OFFICER), respondToDispatch);
 
 // Control Room
 router.get('/active-incidents', authorize(Role.CONTROL_ROOM, Role.AUTHORITY), getAllActiveIncidents);
+router.get('/available-units', authorize(Role.CONTROL_ROOM, Role.AUTHORITY), getAvailableUnitsCount);
 
 export default router;

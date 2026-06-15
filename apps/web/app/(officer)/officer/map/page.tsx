@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { fetchApi } from "@/lib/api";
 import { useSocketStore } from "@/store/socketStore";
+import { useAuthStore } from "@/store/authStore";
 import LiveMap from "@/components/maps/LiveMap";
 
 interface Dispatch {
@@ -22,6 +23,7 @@ export default function OfficerFieldMap() {
   const [activeDispatch, setActiveDispatch] = useState<Dispatch | null>(null);
   const [loading, setLoading] = useState(true);
   const { connect } = useSocketStore();
+  const { user } = useAuthStore();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -142,7 +144,7 @@ export default function OfficerFieldMap() {
                 className="text-xs py-1.5 px-4 rounded-lg font-semibold transition-all"
                 style={{ background: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.3)", color: "#a78bfa" }}
               >
-                📸 Evidence
+                📸 {user?.officerType === "AMBULANCE" ? "Medical Report" : user?.officerType === "FIRE" ? "Damage Report" : "Evidence"}
               </a>
               <button
                 onClick={() => updateStatus("COMPLETED")}

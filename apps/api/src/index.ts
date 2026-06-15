@@ -18,9 +18,7 @@ import notificationRoutes from './features/notifications/notification.routes';
 import usersRoutes from './features/users/users.routes';
 import { setupSocket } from './sockets/socket';
 import path from "path";
-dotenv.config({
-  path: path.resolve(__dirname, "../../../.env"),
-});
+dotenv.config();
 console.log("REDIS_URL =", process.env.REDIS_URL);
 
 const app = express();
@@ -66,3 +64,5 @@ app.get('/api/health', (req: Request, res: Response) => {
 server.listen(port, () => {
   console.log(`[server]: Server is running at http://localhost:${port}`);
 });
+
+

@@ -275,7 +275,8 @@ export default function OfficerDashboard() {
                     {d.status === "ON_SCENE" && (
                       <>
                         <a href={`/officer/evidence/${d.incidentId?._id}`} className="flex items-center gap-2 text-[10px] font-heading font-bold uppercase tracking-widest py-2 px-4 rounded bg-purple-500/10 border border-purple-500/30 text-purple-400 hover:bg-purple-500/20 transition-colors">
-                          <Camera className="w-3 h-3" /> EVIDENCE
+                          <Camera className="w-3 h-3" /> 
+                          {user?.officerType === "AMBULANCE" ? "MEDICAL REPORT" : user?.officerType === "FIRE" ? "DAMAGE REPORT" : "EVIDENCE"}
                         </a>
                         <button className="flex items-center gap-2 text-[10px] font-heading font-bold uppercase tracking-widest py-2 px-4 rounded bg-emerald-600 hover:bg-emerald-500 text-white transition-colors" onClick={() => updateStatus(d._id, "COMPLETED")} disabled={updating === d._id}>
                           <CheckCircle2 className="w-3 h-3" /> COMPLETE
@@ -291,10 +292,10 @@ export default function OfficerDashboard() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
-            { href: "/officer/fir", icon: <FileText className="w-6 h-6" />, label: "DRAFT FIR", desc: "Initiate official report" },
-            { href: "/officer/map", icon: <Navigation className="w-6 h-6" />, label: "TACTICAL MAP", desc: "Live navigation interface" },
-            { href: "/officer/cases", icon: <Folder className="w-6 h-6" />, label: "CASE ARCHIVE", desc: "Historical investigation logs" },
-          ].map((l) => (
+            { href: "/officer/fir", icon: <FileText className="w-6 h-6" />, label: "DRAFT FIR", desc: "Initiate official report", show: user?.officerType === "POLICE" },
+            { href: "/officer/map", icon: <Navigation className="w-6 h-6" />, label: "TACTICAL MAP", desc: "Live navigation interface", show: true },
+            { href: "/officer/cases", icon: <Folder className="w-6 h-6" />, label: "CASE ARCHIVE", desc: "Historical investigation logs", show: true },
+          ].filter(l => l.show).map((l) => (
             <a key={l.href} href={l.href} className="glass-card p-5 border border-surface-border hover:border-accent/50 hover:bg-accent/5 transition-all flex flex-col gap-3 group">
               <div className="text-muted group-hover:text-accent transition-colors">
                 {l.icon}

@@ -15,7 +15,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
 export const updateUserRole = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { role } = req.body;
+    const { role, officerType } = req.body;
 
     if (!Object.values(Role).includes(role)) {
       return res.status(400).json({ success: false, message: 'Invalid role provided' });
@@ -29,8 +29,13 @@ export const updateUserRole = async (req: Request, res: Response) => {
     // we use updateOne on the base collection to change the discriminator key.
     const updateData: any = { role };
 
-    // If upgrading to OFFICER, ensure they have a badge number
+    // If upgrading to OFFICER, ensure they have a badge number and officerType
     if (role === Role.OFFICER) {
+      if (!officerType || !['POLICE', 'FIRE', 'AMBULANCE'].includes(officerType)) {
+        return res.status(400).json({ success: false, message: 'Valid officerType (POLICE, FIRE, AMBULANCE) is required when upgrading to OFFICER' });
+      }
+      updateData.officerType = officerType;
+
       const existingUser = await User.findById(id);
       if (existingUser && !(existingUser as any).badgeNumber) {
         updateData.badgeNumber = `OFF-${Math.floor(Math.random() * 10000)}`;

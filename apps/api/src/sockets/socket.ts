@@ -24,30 +24,30 @@ export const setupSocket = (server: http.Server) => {
 
   console.log("REDIS_URL =", process.env.REDIS_URL);
 
-  try {
-    const pubClient = createClient({
-      url: process.env.REDIS_URL
-    });
+  // try {
+  //   const pubClient = createClient({
+  //     url: process.env.REDIS_URL
+  //   });
+  //   pubClient.on('error', (err) => console.error('Redis Pub Client Error', err));
 
-    const subClient = pubClient.duplicate();
+  //   const subClient = pubClient.duplicate();
+  //   subClient.on('error', (err) => console.error('Redis Sub Client Error', err));
 
-    Promise.all([
-      pubClient.connect(),
-      subClient.connect()
-    ])
-      .then(() => {
-        console.log("✅ Redis Connected");
-        io.adapter(createAdapter(pubClient, subClient));
-      })
-      .catch((err) => {
-        console.error("❌ Redis Connection Failed");
-        console.error(err);
-      });
+  //   Promise.all([
+  //     pubClient.connect(),
+  //     subClient.connect()
+  //   ])
+  //     .then(() => {
+  //       console.log("✅ Redis Connected");
+  //       io.adapter(createAdapter(pubClient, subClient));
+  //     })
+  //     .catch((err) => {
+  //       console.error("❌ Redis Connection Failed (Using in-memory adapter)");
+  //     });
 
-  } catch (err) {
-    console.error("❌ Redis Setup Failed");
-    console.error(err);
-  }
+  // } catch (err) {
+  //   console.error("❌ Redis Setup Failed");
+  // }
 
   // Middleware for auth
   io.use((socket, next) => {

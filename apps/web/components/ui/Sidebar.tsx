@@ -68,7 +68,11 @@ export default function Sidebar() {
   else if (pathname.startsWith("/authority")) portalRole = "AUTHORITY";
   else if (user?.role) portalRole = user.role;
 
-  const nav = NAV_MAP[portalRole] || CITIZEN_NAV;
+  let nav = NAV_MAP[portalRole] || CITIZEN_NAV;
+  if (portalRole === "OFFICER" && user?.officerType !== "POLICE") {
+    nav = nav.filter(item => item.href !== "/officer/fir");
+  }
+  
   const meta = ROLE_META[portalRole] || ROLE_META.CITIZEN;
 
   const [mounted, setMounted] = useState(false);

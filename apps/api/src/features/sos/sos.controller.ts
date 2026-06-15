@@ -46,6 +46,7 @@ export const triggerSOS = async (req: AuthRequest, res: Response) => {
     if (validatedData.servicesRequired.includes('POLICE')) {
       const nearestOfficer = await Officer.findOne({
         status: 'AVAILABLE',
+        officerType: 'POLICE',
         currentLocation: {
           $near: {
             $geometry: { type: 'Point', coordinates: [lon, lat] },
@@ -93,6 +94,42 @@ export const triggerSOS = async (req: AuthRequest, res: Response) => {
         const dispatchReq = await dispatchUnit(incident._id, nearestAmbulance._id, 'AMBULANCE', 10);
         dispatchedRequests.push(dispatchReq);
         await Ambulance.findByIdAndUpdate(nearestAmbulance._id, { status: 'DISPATCHED', assignedTo: incident._id });
+      }
+    }
+
+    // Dispatch Fire
+    if (validatedData.servicesRequired.includes('FIRE')) {
+      const nearestFire = await Officer.findOne({
+        status: 'AVAILABLE',
+        officerType: 'FIRE',
+        currentLocation: {
+          $near: {
+            $geometry: { type: 'Point', coordinates: [lon, lat] },
+            $maxDistance: searchRadiusKm * 1000,
+          }
+        }
+      });
+
+      if (nearestFire) {
+        const distanceObj = await Officer.aggregate([
+          {
+            $geoNear: {
+              near: { type: 'Point', coordinates: [lon, lat] },
+              distanceField: "distance",
+              maxDistance: searchRadiusKm * 1000,
+              query: { _id: nearestFire._id },
+              spherical: true
+            }
+          }
+        ]);
+        
+        const distKm = distanceObj.length > 0 ? distanceObj[0].distance / 1000 : 5;
+        const eta = Math.ceil(distKm * 1.5 + 2); // Fire engines might be slower
+        
+        const dispatchReq = await dispatchUnit(incident._id, nearestFire._id, 'FIRE', eta);
+        dispatchedRequests.push(dispatchReq);
+        
+        await Officer.findByIdAndUpdate(nearestFire._id, { status: 'DISPATCHED' });
       }
     }
 

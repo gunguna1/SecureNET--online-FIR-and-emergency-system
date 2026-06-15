@@ -60,10 +60,11 @@ export const createDispatch = async (req: AuthRequest, res: Response) => {
   try {
     const validatedData = createDispatchSchema.parse(req.body);
     
-    // Find an available officer
-    // Note: Officer model currently doesn't have a department field, so we find any available officer
+    // Find an available officer matching the requested type
+    const officerTypeReq = validatedData.unitType === 'MEDICAL' ? 'AMBULANCE' : validatedData.unitType;
     const officer = await Officer.findOne({ 
-      status: 'AVAILABLE' 
+      status: 'AVAILABLE',
+      officerType: officerTypeReq
     });
 
     if (!officer) {
@@ -126,6 +127,24 @@ export const getAllActiveIncidents = async (req: AuthRequest, res: Response) => 
       
     res.status(200).json({ success: true, count: incidents.length, data: incidents });
   } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+export const getAvailableUnitsCount = async (req: AuthRequest, res: Response) => {
+  try {
+    const counts = await Officer.aggregate([
+      { $match: { status: 'AVAILABLE' } },
+      { $group: { _id: '$officerType', count: { $sum: 1 } } }
+    ]);
+    
+    const result: Record<string, number> = { POLICE: 0, FIRE: 0, AMBULANCE: 0 };
+    counts.forEach(c => {
+      if (result[c._id] !== undefined) result[c._id] = c.count;
+    });
+    
+    res.status(200).json({ success: true, data: result });
+  } catch (error: any) {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };

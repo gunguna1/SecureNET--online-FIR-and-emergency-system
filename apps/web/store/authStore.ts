@@ -6,6 +6,7 @@ interface User {
   lastName: string;
   email: string;
   role: string;
+  officerType?: string;
 }
 
 interface AuthState {
@@ -34,12 +35,14 @@ export const useAuthStore = create<AuthState>((set) => ({
   login: (user, token) => {
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(user));
+    document.cookie = `auth_token=${token}; path=/; max-age=604800; SameSite=Strict`;
     set({ user, token, isAuthenticated: true });
   },
   
   logout: () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    document.cookie = `auth_token=; path=/; max-age=0; SameSite=Strict`;
     set({ user: null, token: null, isAuthenticated: false });
   },
 }));

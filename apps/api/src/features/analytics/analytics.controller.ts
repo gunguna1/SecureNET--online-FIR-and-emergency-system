@@ -5,6 +5,7 @@ import { Incident } from '../../models/Incident';
 import { FIR } from '../../models/FIR';
 import { Officer } from '../../models/User';
 import { AuditLog } from '../../models/AuditLog';
+import { DispatchRequest } from '../../models/DispatchRequest';
 
 export const getDashboardKPIs = async (req: AuthRequest, res: Response) => {
   try {
@@ -56,18 +57,42 @@ export const getCrimeTrends = async (req: AuthRequest, res: Response) => {
 
 export const getOfficerPerformance = async (req: AuthRequest, res: Response) => {
   try {
-    const officers = await Officer.find().select('firstName lastName badgeNumber status');
-    // In a real scenario, we would aggregate completed dispatches per officer
-    const performance = officers.map(o => ({
-      name: `${o.firstName} ${o.lastName}`,
-      badge: o.badgeNumber,
-      status: o.status,
-      casesResolved: Math.floor(Math.random() * 50), // Mock data
-      avgTime: Math.floor(Math.random() * 30) + 10,  // Mock data
-    }));
+    const officers = await Officer.find().select('firstName lastName badgeNumber status _id');
+    
+    // Aggregate completed dispatches per officer
+    const dispatchStats = await DispatchRequest.aggregate([
+      { $match: { status: 'COMPLETED' } },
+      {
+        $group: {
+          _id: '$unitId',
+          casesResolved: { $sum: 1 },
+          avgTimeMs: { $avg: { $subtract: ['$completedAt', '$createdAt'] } }
+        }
+      }
+    ]);
+
+    const statsMap = new Map();
+    dispatchStats.forEach(stat => {
+      statsMap.set(stat._id.toString(), {
+        casesResolved: stat.casesResolved,
+        avgTime: stat.avgTimeMs ? Math.floor(stat.avgTimeMs / (1000 * 60)) : 0
+      });
+    });
+
+    const performance = officers.map(o => {
+      const stats = statsMap.get(o._id.toString()) || { casesResolved: 0, avgTime: 0 };
+      return {
+        name: `${o.firstName} ${o.lastName}`,
+        badge: o.badgeNumber,
+        status: o.status,
+        casesResolved: stats.casesResolved,
+        avgTime: stats.avgTime,
+      };
+    });
 
     res.status(200).json({ success: true, data: performance });
   } catch (error) {
+    console.error('Officer performance error:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
@@ -88,18 +113,35 @@ export const getAuditLogs = async (req: AuthRequest, res: Response) => {
 
 export const getTimeTrends = async (req: AuthRequest, res: Response) => {
   try {
-    // Mock 7-day trend data for the line chart
-    const data = [
-      { date: "Mon", incidents: Math.floor(Math.random() * 50) + 10 },
-      { date: "Tue", incidents: Math.floor(Math.random() * 50) + 10 },
-      { date: "Wed", incidents: Math.floor(Math.random() * 50) + 10 },
-      { date: "Thu", incidents: Math.floor(Math.random() * 50) + 10 },
-      { date: "Fri", incidents: Math.floor(Math.random() * 50) + 10 },
-      { date: "Sat", incidents: Math.floor(Math.random() * 50) + 10 },
-      { date: "Sun", incidents: Math.floor(Math.random() * 50) + 10 }
-    ];
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
+
+    const incidents = await Incident.find({ createdAt: { $gte: sevenDaysAgo } }).select('createdAt');
+
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const trendMap = new Map<string, number>();
+    
+    // Pre-fill the map with the last 7 days in order
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dayName = days[d.getDay()];
+      trendMap.set(dayName, 0);
+    }
+
+    // Populate incidents count
+    incidents.forEach(inc => {
+      const dayName = days[inc.createdAt.getDay()];
+      if (trendMap.has(dayName)) {
+        trendMap.set(dayName, trendMap.get(dayName)! + 1);
+      }
+    });
+
+    const data = Array.from(trendMap, ([date, incidents]) => ({ date, incidents }));
     res.status(200).json({ success: true, data });
   } catch (error) {
+    console.error('Time trends error:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };

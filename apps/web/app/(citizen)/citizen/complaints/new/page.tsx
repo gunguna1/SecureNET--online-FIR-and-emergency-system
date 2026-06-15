@@ -3,16 +3,22 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { fetchApi } from "@/lib/api";
+import { 
+  Scale, AlertTriangle, Laptop, UserMinus, 
+  Car, Shield, Baby, Home, 
+  FileText, ChevronRight, ChevronLeft, 
+  BrainCircuit, MapPin, CheckCircle2, Send 
+} from "lucide-react";
 
 const COMPLAINT_TYPES = [
-  { id: "CIVIL",             icon: "⚖️",  label: "Civil Dispute",     color: "#2d8cf0" },
-  { id: "CRIMINAL",          icon: "🔫",  label: "Criminal",           color: "#ef4444" },
-  { id: "CYBER_CRIME",       icon: "💻",  label: "Cyber Crime",        color: "#8b5cf6" },
-  { id: "MISSING_PERSON",    icon: "🔍",  label: "Missing Person",     color: "#f59e0b" },
-  { id: "TRAFFIC",           icon: "🚗",  label: "Traffic Incident",   color: "#06b6d4" },
-  { id: "WOMEN_SAFETY",      icon: "👩",  label: "Women Safety",       color: "#ec4899" },
-  { id: "CHILD_SAFETY",      icon: "👶",  label: "Child Safety",       color: "#f97316" },
-  { id: "DOMESTIC_VIOLENCE", icon: "🏠",  label: "Domestic Violence",  color: "#ef4444" },
+  { id: "CIVIL",             icon: <Scale className="w-6 h-6" />,           label: "CIVIL DISPUTE",     color: "text-blue-500", border: "border-blue-500/30", bg: "bg-blue-500/10", activeBg: "bg-blue-500/20" },
+  { id: "CRIMINAL",          icon: <AlertTriangle className="w-6 h-6" />,   label: "CRIMINAL",          color: "text-red-500", border: "border-red-500/30", bg: "bg-red-500/10", activeBg: "bg-red-500/20" },
+  { id: "CYBER_CRIME",       icon: <Laptop className="w-6 h-6" />,          label: "CYBER CRIME",       color: "text-purple-500", border: "border-purple-500/30", bg: "bg-purple-500/10", activeBg: "bg-purple-500/20" },
+  { id: "MISSING_PERSON",    icon: <UserMinus className="w-6 h-6" />,       label: "MISSING PERSON",    color: "text-amber-500", border: "border-amber-500/30", bg: "bg-amber-500/10", activeBg: "bg-amber-500/20" },
+  { id: "TRAFFIC",           icon: <Car className="w-6 h-6" />,             label: "TRAFFIC INCIDENT",  color: "text-cyan-500", border: "border-cyan-500/30", bg: "bg-cyan-500/10", activeBg: "bg-cyan-500/20" },
+  { id: "WOMEN_SAFETY",      icon: <Shield className="w-6 h-6" />,          label: "WOMEN SAFETY",      color: "text-pink-500", border: "border-pink-500/30", bg: "bg-pink-500/10", activeBg: "bg-pink-500/20" },
+  { id: "CHILD_SAFETY",      icon: <Baby className="w-6 h-6" />,            label: "CHILD SAFETY",      color: "text-orange-500", border: "border-orange-500/30", bg: "bg-orange-500/10", activeBg: "bg-orange-500/20" },
+  { id: "DOMESTIC_VIOLENCE", icon: <Home className="w-6 h-6" />,            label: "DOMESTIC VIOLENCE", color: "text-red-500", border: "border-red-500/30", bg: "bg-red-500/10", activeBg: "bg-red-500/20" },
 ];
 
 export default function NewComplaintPage() {
@@ -77,57 +83,71 @@ export default function NewComplaintPage() {
     }
   };
 
-  const steps = ["Type", "Details", "Location", "Review"];
+  const steps = ["INCIDENT TYPE", "LOG DETAILS", "GPS LOCATOR", "VERIFICATION"];
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6 slide-in">
-      <div>
-        <h1 className="text-2xl font-black" style={{ color: "var(--clr-text-primary)" }}>
-          📋 File a Complaint
-        </h1>
-        <p className="text-sm mt-1" style={{ color: "var(--clr-text-secondary)" }}>
-          Your complaint will be reviewed and acted upon promptly
-        </p>
+    <div className="max-w-4xl mx-auto space-y-8 slide-in pb-12">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-surface-border pb-6">
+        <div>
+          <button 
+            onClick={() => router.push("/citizen/dashboard")}
+            className="flex items-center gap-2 text-xs font-heading font-bold text-muted hover:text-white uppercase tracking-widest transition-colors mb-4"
+          >
+            <ChevronLeft className="w-4 h-4" /> BACK TO TERMINAL
+          </button>
+          <h1 className="font-heading font-black text-3xl tracking-tighter text-white uppercase flex items-center gap-3">
+            <FileText className="w-6 h-6 text-accent" />
+            FILE A COMPLAINT
+          </h1>
+          <p className="text-xs font-mono text-muted uppercase tracking-widest mt-2 flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+            SECURE INTAKE FORM // ALL DATA IS ENCRYPTED
+          </p>
+        </div>
       </div>
 
-      {/* Step indicator */}
+      {/* Stepper */}
       <div className="flex gap-2">
         {steps.map((s, i) => (
           <div key={s} className="flex-1">
-            <div className="h-1.5 rounded-full transition-all duration-500" style={{
-              background: i < step ? "#2d8cf0" : i === step ? "#60a5fa" : "rgba(255,255,255,0.08)"
-            }} />
-            <p className="text-xs mt-1 font-medium" style={{ color: i === step ? "#60a5fa" : "var(--clr-text-muted)" }}>{s}</p>
+            <div className={`h-1.5 rounded-full transition-all duration-500 ${i < step ? "bg-accent" : i === step ? "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" : "bg-surface-border"}`} />
+            <p className={`text-[10px] font-heading font-bold uppercase tracking-widest mt-2 ${i === step ? "text-emerald-500" : i < step ? "text-accent" : "text-muted"}`}>
+              {s}
+            </p>
           </div>
         ))}
       </div>
 
-      <div className="glass-card p-7">
+      <div className="glass-card p-8 border border-surface-border relative overflow-hidden">
+        {/* Background Accent */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-accent/5 blur-3xl rounded-full pointer-events-none" />
+
         {error && (
-          <div className="mb-5 px-4 py-3 rounded-lg text-sm" style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#f87171" }}>
-            ⚠️ {error}
+          <div className="mb-6 px-4 py-3 rounded text-xs font-mono bg-red-500/10 border border-red-500/30 text-red-500 flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4" /> {error}
           </div>
         )}
 
         {/* Step 0 — Type Selection */}
         {step === 0 && (
-          <div>
-            <p className="text-sm font-semibold mb-4" style={{ color: "var(--clr-text-secondary)" }}>
-              Select the nature of your complaint:
-            </p>
-            <div className="grid grid-cols-2 gap-3">
+          <div className="animate-bounce-in relative z-10">
+            <h2 className="font-heading font-black text-lg text-white uppercase tracking-widest mb-6 border-b border-surface-border pb-2">
+              SELECT INCIDENT CLASSIFICATION
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
               {COMPLAINT_TYPES.map((t) => (
                 <button
                   key={t.id}
                   onClick={() => { update("type", t.id); setStep(1); }}
-                  className="flex items-center gap-3 p-4 rounded-xl text-left transition-all"
-                  style={{
-                    background: form.type === t.id ? `${t.color}15` : "rgba(255,255,255,0.03)",
-                    border: `1px solid ${form.type === t.id ? t.color + "40" : "var(--clr-border)"}`,
-                  }}
+                  className={`flex flex-col items-center justify-center gap-3 p-6 rounded border transition-all hover:scale-105 active:scale-95 group
+                    ${form.type === t.id ? `${t.activeBg} ${t.border}` : `bg-black/40 border-surface-border hover:${t.border} hover:${t.bg}`}
+                  `}
                 >
-                  <span className="text-2xl flex-shrink-0">{t.icon}</span>
-                  <span className="text-sm font-semibold" style={{ color: form.type === t.id ? t.color : "var(--clr-text-secondary)" }}>
+                  <div className={`${form.type === t.id ? t.color : "text-muted group-hover:" + t.color} transition-colors`}>
+                    {t.icon}
+                  </div>
+                  <span className={`text-[10px] font-heading font-bold uppercase tracking-widest text-center ${form.type === t.id ? "text-white" : "text-slate-400 group-hover:text-white"}`}>
                     {t.label}
                   </span>
                 </button>
@@ -138,107 +158,208 @@ export default function NewComplaintPage() {
 
         {/* Step 1 — Details */}
         {step === 1 && (
-          <div className="space-y-5">
-            <div className="form-control">
-              <label className="form-label">Complaint Title</label>
-              <input className="form-input" placeholder="Brief title of the incident"
-                value={form.title} onChange={e => update("title", e.target.value)} />
-            </div>
-            <div className="form-control">
-              <label className="form-label">Detailed Description</label>
-              <textarea
-                rows={5}
-                className="form-input resize-none"
-                placeholder="Describe what happened in detail..."
-                value={form.description}
-                onChange={e => update("description", e.target.value)}
-                onBlur={getAiSuggestion}
-              />
-            </div>
-
-            {aiSuggestion && (
-              <div className="p-4 rounded-xl text-sm space-y-2" style={{ background: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.25)" }}>
-                <p className="font-semibold" style={{ color: "#a78bfa" }}>🧠 AI Suggestion</p>
-                <p style={{ color: "var(--clr-text-secondary)" }}>
-                  Type: <strong>{aiSuggestion.suggestedType?.replace("_"," ")}</strong> · Priority: <strong>{aiSuggestion.suggestedPriority}</strong>
-                </p>
-                <p className="text-xs" style={{ color: "var(--clr-text-muted)" }}>{aiSuggestion.summary}</p>
+          <div className="space-y-6 animate-bounce-in relative z-10">
+            <h2 className="font-heading font-black text-lg text-white uppercase tracking-widest mb-6 border-b border-surface-border pb-2">
+              LOG INCIDENT DETAILS
+            </h2>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-[10px] font-heading font-bold text-muted uppercase tracking-widest mb-2">INCIDENT TITLE</label>
+                <input 
+                  className="w-full bg-black/40 border border-surface-border rounded p-3 text-sm font-mono text-white placeholder:text-slate-600 focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/50 transition-all" 
+                  placeholder="BRIEF SUMMARY..."
+                  value={form.title} 
+                  onChange={e => update("title", e.target.value)} 
+                />
               </div>
-            )}
 
-            <div className="form-control">
-              <label className="form-label">Date & Time of Incident</label>
-              <input type="datetime-local" className="form-input"
-                value={form.incidentDate} onChange={e => update("incidentDate", e.target.value)} />
+              <div>
+                <label className="block text-[10px] font-heading font-bold text-muted uppercase tracking-widest mb-2">DETAILED DESCRIPTION</label>
+                <textarea
+                  rows={6}
+                  className="w-full bg-black/40 border border-surface-border rounded p-3 text-sm font-mono text-white placeholder:text-slate-600 focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/50 transition-all resize-none"
+                  placeholder="ENTER FULL INCIDENT LOG HERE..."
+                  value={form.description}
+                  onChange={e => update("description", e.target.value)}
+                  onBlur={getAiSuggestion}
+                />
+              </div>
+
+              {aiSuggestion && (
+                <div className="p-4 rounded border border-purple-500/30 bg-purple-500/10 space-y-2 animate-bounce-in">
+                  <p className="text-xs font-heading font-bold uppercase tracking-widest text-purple-400 flex items-center gap-2">
+                    <BrainCircuit className="w-4 h-4" /> AI ANALYSIS LOG
+                  </p>
+                  <p className="text-[10px] font-mono text-slate-300">
+                    DETECTED CLASSIFICATION: <span className="text-white">{aiSuggestion.suggestedType?.replace("_"," ")}</span><br/>
+                    THREAT PRIORITY: <span className="text-white">{aiSuggestion.suggestedPriority}</span>
+                  </p>
+                  <p className="text-[10px] font-mono text-purple-300/70">{aiSuggestion.summary}</p>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-[10px] font-heading font-bold text-muted uppercase tracking-widest mb-2">DATE & TIME OF INCIDENT</label>
+                <input 
+                  type="datetime-local" 
+                  className="w-full bg-black/40 border border-surface-border rounded p-3 text-sm font-mono text-white placeholder:text-slate-600 focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/50 transition-all [color-scheme:dark]"
+                  value={form.incidentDate} 
+                  onChange={e => update("incidentDate", e.target.value)} 
+                />
+              </div>
             </div>
 
-            <div className="flex gap-3 mt-2">
-              <button onClick={() => setStep(0)} className="flex-1 py-2.5 rounded-lg text-sm font-semibold" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid var(--clr-border)", color: "var(--clr-text-secondary)" }}>← Back</button>
-              <button onClick={() => setStep(2)} className="flex-[2] btn-primary" disabled={!form.title || !form.description}>Continue →</button>
+            <div className="flex gap-4 mt-8 pt-6 border-t border-surface-border">
+              <button 
+                onClick={() => setStep(0)} 
+                className="flex-1 py-3 border border-surface-border rounded text-xs font-heading font-bold text-muted uppercase tracking-widest hover:text-white hover:bg-white/5 transition-all flex items-center justify-center gap-2"
+              >
+                <ChevronLeft className="w-4 h-4" /> BACK
+              </button>
+              <button 
+                onClick={() => setStep(2)} 
+                disabled={!form.title || !form.description || !form.incidentDate}
+                className="flex-[2] py-3 bg-accent/10 border border-accent/30 rounded text-xs font-heading font-bold text-accent uppercase tracking-widest hover:bg-accent/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                PROCEED TO LOCATION <ChevronRight className="w-4 h-4" />
+              </button>
             </div>
           </div>
         )}
 
         {/* Step 2 — Location */}
         {step === 2 && (
-          <div className="space-y-5">
-            <div className="form-control">
-              <label className="form-label">Address / Area</label>
-              <input className="form-input" placeholder="Street, Area, City..."
-                value={form.address} onChange={e => update("address", e.target.value)} />
-            </div>
-            <button
-              onClick={getLocation}
-              className="w-full py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all"
-              style={{ background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)", color: "#34d399" }}
-            >
-              📍 Capture Current GPS Location
-            </button>
-            {form.latitude && (
-              <div className="text-xs px-3 py-2 rounded-lg" style={{ background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.2)", color: "#34d399" }}>
-                ✅ GPS captured: {parseFloat(form.latitude).toFixed(6)}°N, {parseFloat(form.longitude).toFixed(6)}°E
+          <div className="space-y-6 animate-bounce-in relative z-10">
+            <h2 className="font-heading font-black text-lg text-white uppercase tracking-widest mb-6 border-b border-surface-border pb-2">
+              GPS & LOCATION TARGETING
+            </h2>
+            
+            <div className="space-y-6">
+              <div>
+                <label className="block text-[10px] font-heading font-bold text-muted uppercase tracking-widest mb-2">MANUAL ADDRESS</label>
+                <input 
+                  className="w-full bg-black/40 border border-surface-border rounded p-3 text-sm font-mono text-white placeholder:text-slate-600 focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/50 transition-all" 
+                  placeholder="ENTER STREET, AREA, CITY..."
+                  value={form.address} 
+                  onChange={e => update("address", e.target.value)} 
+                />
               </div>
-            )}
-            <div className="flex gap-3 mt-2">
-              <button onClick={() => setStep(1)} className="flex-1 py-2.5 rounded-lg text-sm font-semibold" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid var(--clr-border)", color: "var(--clr-text-secondary)" }}>← Back</button>
-              <button onClick={() => setStep(3)} className="flex-[2] btn-primary">Continue →</button>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-surface-border"></div>
+                </div>
+                <div className="relative flex justify-center text-[10px] font-mono">
+                  <span className="px-2 bg-[#0a1120] text-muted">OR PING GPS SATELLITE</span>
+                </div>
+              </div>
+
+              <button
+                onClick={getLocation}
+                className="w-full py-6 border-2 border-dashed border-emerald-500/30 bg-emerald-500/5 rounded hover:bg-emerald-500/10 transition-all flex flex-col items-center justify-center gap-3 group"
+              >
+                <MapPin className="w-8 h-8 text-emerald-500 group-hover:scale-110 transition-transform" />
+                <span className="text-xs font-heading font-bold uppercase tracking-widest text-emerald-400">
+                  CAPTURE DEVICE COORDINATES
+                </span>
+              </button>
+
+              {form.latitude && (
+                <div className="p-4 rounded border border-emerald-500/30 bg-emerald-500/10 flex items-start gap-3 animate-bounce-in">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+                  <div>
+                    <p className="text-xs font-heading font-bold uppercase tracking-widest text-emerald-400 mb-1">LOCK ACQUIRED</p>
+                    <p className="text-[10px] font-mono text-emerald-300/70">
+                      LAT: {parseFloat(form.latitude).toFixed(6)}°N <br/>
+                      LNG: {parseFloat(form.longitude).toFixed(6)}°E
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-4 mt-8 pt-6 border-t border-surface-border">
+              <button 
+                onClick={() => setStep(1)} 
+                className="flex-1 py-3 border border-surface-border rounded text-xs font-heading font-bold text-muted uppercase tracking-widest hover:text-white hover:bg-white/5 transition-all flex items-center justify-center gap-2"
+              >
+                <ChevronLeft className="w-4 h-4" /> BACK
+              </button>
+              <button 
+                onClick={() => setStep(3)} 
+                disabled={!form.address && !form.latitude}
+                className="flex-[2] py-3 bg-accent/10 border border-accent/30 rounded text-xs font-heading font-bold text-accent uppercase tracking-widest hover:bg-accent/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                VERIFY ARCHIVE <ChevronRight className="w-4 h-4" />
+              </button>
             </div>
           </div>
         )}
 
         {/* Step 3 — Review */}
         {step === 3 && (
-          <div className="space-y-5">
-            <h3 className="font-bold" style={{ color: "var(--clr-text-primary)" }}>Review before submitting</h3>
-            <div className="space-y-3 rounded-xl p-5 text-sm" style={{ background: "rgba(7,20,38,0.8)", border: "1px solid var(--clr-border)" }}>
+          <div className="space-y-6 animate-bounce-in relative z-10">
+            <h2 className="font-heading font-black text-lg text-emerald-500 uppercase tracking-widest mb-6 border-b border-surface-border pb-2 flex items-center gap-2">
+              <Shield className="w-5 h-5" /> VERIFY BEFORE TRANSMISSION
+            </h2>
+            
+            <div className="bg-black/40 border border-surface-border rounded p-6 space-y-4">
               {[
-                ["Type",    COMPLAINT_TYPES.find(t => t.id === form.type)?.label || form.type],
-                ["Title",   form.title],
-                ["Date",    form.incidentDate ? new Date(form.incidentDate).toLocaleString("en-IN") : "—"],
-                ["Address", form.address || "Not specified"],
-                ["GPS",     form.latitude ? `${parseFloat(form.latitude).toFixed(4)}°N` : "Not captured"],
+                ["CLASSIFICATION", COMPLAINT_TYPES.find(t => t.id === form.type)?.label || form.type],
+                ["INCIDENT TITLE", form.title],
+                ["TIMESTAMP",    form.incidentDate ? new Date(form.incidentDate).toLocaleString("en-IN") : "UNKNOWN"],
+                ["GPS TARGET",   form.latitude ? `${parseFloat(form.latitude).toFixed(4)}°N, ${parseFloat(form.longitude).toFixed(4)}°E` : "NOT PINGED"],
+                ["AREA/ADDRESS", form.address || "UNSPECIFIED"],
               ].map(([l, v]) => (
-                <div key={l} className="flex justify-between gap-4">
-                  <span style={{ color: "var(--clr-text-muted)" }}>{l}</span>
-                  <span className="text-right font-medium" style={{ color: "var(--clr-text-primary)" }}>{v}</span>
+                <div key={l} className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-4 border-b border-surface-border/50 pb-2 last:border-0 last:pb-0">
+                  <span className="text-[10px] font-heading font-bold text-muted uppercase tracking-widest">{l}</span>
+                  <span className="text-xs font-mono text-white text-right">{v}</span>
                 </div>
               ))}
-              <div>
-                <span style={{ color: "var(--clr-text-muted)" }}>Description</span>
-                <p className="mt-1 text-xs leading-relaxed" style={{ color: "var(--clr-text-secondary)" }}>
-                  {form.description.slice(0, 120)}{form.description.length > 120 ? "…" : ""}
+              
+              <div className="pt-2 border-t border-surface-border/50">
+                <span className="text-[10px] font-heading font-bold text-muted uppercase tracking-widest block mb-2">FULL LOG</span>
+                <p className="text-xs font-mono text-slate-300 leading-relaxed bg-black/50 p-3 rounded border border-surface-border/50">
+                  {form.description}
                 </p>
               </div>
             </div>
-            <div className="flex gap-3">
-              <button onClick={() => setStep(2)} className="flex-1 py-2.5 rounded-lg text-sm font-semibold" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid var(--clr-border)", color: "var(--clr-text-secondary)" }}>← Back</button>
-              <button onClick={handleSubmit} className="flex-[2] btn-primary" disabled={loading}>
-                {loading ? "Submitting…" : "✅ Submit Complaint"}
+
+            <div className="flex gap-4 mt-8 pt-6 border-t border-surface-border">
+              <button 
+                onClick={() => setStep(2)} 
+                className="flex-1 py-4 border border-surface-border rounded text-xs font-heading font-bold text-muted uppercase tracking-widest hover:text-white hover:bg-white/5 transition-all flex items-center justify-center gap-2"
+              >
+                <ChevronLeft className="w-4 h-4" /> EDIT LOG
+              </button>
+              <button 
+                onClick={handleSubmit} 
+                disabled={loading}
+                className="flex-[2] py-4 rounded text-white font-heading font-black text-sm uppercase tracking-widest transition-all hover:scale-[1.01] active:scale-95 shadow-[0_0_20px_rgba(16,185,129,0.2)] disabled:opacity-40 disabled:cursor-not-allowed border border-emerald-500/50 flex items-center justify-center gap-2"
+                style={{ background: "linear-gradient(135deg, #059669, #047857)" }}
+              >
+                {loading ? (
+                  <span className="animate-pulse">TRANSMITTING...</span>
+                ) : (
+                  <>
+                    <Send className="w-5 h-5" /> TRANSMIT TO CONTROL ROOM
+                  </>
+                )}
               </button>
             </div>
           </div>
         )}
       </div>
+
+      <style dangerouslySetInnerHTML={{
+        __html: `
+        @keyframes bounce-in {
+          0% { transform: translateY(10px); opacity: 0; }
+          100% { transform: translateY(0); opacity: 1; }
+        }
+        .animate-bounce-in { animation: bounce-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+      `}} />
     </div>
   );
 }

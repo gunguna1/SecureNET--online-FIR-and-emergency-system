@@ -57,6 +57,7 @@ export const Citizen = User.discriminator<ICitizen>(Role.CITIZEN, citizenSchema)
 export interface IOfficer extends IUser {
   badgeNumber: string;
   stationId: mongoose.Types.ObjectId;
+  officerType: 'POLICE' | 'FIRE' | 'AMBULANCE';
   status: 'AVAILABLE' | 'DISPATCHED' | 'ON_SCENE' | 'OFF_DUTY';
   currentLocation: {
     type: 'Point';
@@ -67,6 +68,7 @@ export interface IOfficer extends IUser {
 const officerSchema = new Schema({
   badgeNumber: { type: String, required: true, unique: true, sparse: true },
   stationId: { type: Schema.Types.ObjectId, ref: 'Station' },
+  officerType: { type: String, enum: ['POLICE', 'FIRE', 'AMBULANCE'], default: 'POLICE' },
   status: { type: String, enum: ['AVAILABLE', 'DISPATCHED', 'ON_SCENE', 'OFF_DUTY'], default: 'AVAILABLE' },
   currentLocation: {
     type: { type: String, enum: ['Point'], default: 'Point' },

@@ -12,6 +12,7 @@ interface UserData {
   email: string;
   phone: string;
   role: string;
+  officerType?: string;
   badgeNumber?: string;
   createdAt: string;
 }
@@ -36,6 +37,8 @@ export default function ManageOperatives() {
   const [search, setSearch] = useState("");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [officerTypeModalOpen, setOfficerTypeModalOpen] = useState(false);
+  const [selectedUserForOfficer, setSelectedUserForOfficer] = useState<string | null>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -55,21 +58,32 @@ export default function ManageOperatives() {
   };
 
   const handleRoleChange = async (userId: string, newRole: string) => {
+    if (newRole === "OFFICER") {
+      setSelectedUserForOfficer(userId);
+      setOfficerTypeModalOpen(true);
+      return;
+    }
+    await performRoleUpdate(userId, newRole);
+  };
+
+  const performRoleUpdate = async (userId: string, newRole: string, officerType?: string) => {
     try {
       setUpdatingId(userId);
       setError(null);
       
       const res = await fetchApi(`/users/${userId}/role`, {
         method: "PATCH",
-        body: JSON.stringify({ role: newRole }),
+        body: JSON.stringify({ role: newRole, officerType }),
       });
 
       // Update user in state
-      setUsers(users.map(u => u._id === userId ? { ...u, role: res.data.role, badgeNumber: res.data.badgeNumber } : u));
+      setUsers(users.map(u => u._id === userId ? { ...u, role: res.data.role, badgeNumber: res.data.badgeNumber, officerType: res.data.officerType } : u));
     } catch (err: any) {
       setError(err.message || "Failed to update role");
     } finally {
       setUpdatingId(null);
+      setOfficerTypeModalOpen(false);
+      setSelectedUserForOfficer(null);
     }
   };
 
@@ -165,8 +179,22 @@ export default function ManageOperatives() {
                           {user.role}
                         </div>
                         {user.badgeNumber && (
-                          <div className="text-[10px] font-mono text-primary uppercase mt-1.5">
-                            Badge: {user.badgeNumber}
+                          <div className="text-[10px] font-mono text-primary uppercase mt-1.5 flex flex-col gap-1">
+                            <span>Badge: {user.badgeNumber}</span>
+                            {user.officerType && (
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className="text-accent">Type: {user.officerType}</span>
+                                <button 
+                                  onClick={() => {
+                                    setSelectedUserForOfficer(user._id);
+                                    setOfficerTypeModalOpen(true);
+                                  }}
+                                  className="text-[9px] px-1.5 py-0.5 rounded border border-accent/50 text-accent bg-accent/5 hover:bg-accent/20 transition-colors cursor-pointer"
+                                >
+                                  CHANGE
+                                </button>
+                              </div>
+                            )}
                           </div>
                         )}
                       </td>
@@ -194,6 +222,46 @@ export default function ManageOperatives() {
           </div>
         )}
       </div>
+
+      {/* Officer Type Modal */}
+      {officerTypeModalOpen && selectedUserForOfficer && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="glass-card p-6 w-full max-w-sm border-primary/30">
+            <h3 className="font-heading font-black text-xl text-white uppercase tracking-wider mb-2">Select Officer Division</h3>
+            <p className="text-xs text-muted font-mono mb-6">Choose the specialized division for this operative.</p>
+            
+            <div className="space-y-3 mb-6">
+              {[
+                { type: 'POLICE', icon: <Shield className="w-5 h-5" />, color: 'text-primary' },
+                { type: 'FIRE', icon: <Activity className="w-5 h-5 text-orange-500" />, color: 'text-orange-500' },
+                { type: 'AMBULANCE', icon: <Activity className="w-5 h-5 text-success" />, color: 'text-success' },
+              ].map((opt) => (
+                <button
+                  key={opt.type}
+                  onClick={() => performRoleUpdate(selectedUserForOfficer, "OFFICER", opt.type)}
+                  className={`w-full flex items-center gap-3 p-3 rounded bg-black/40 border border-surface-border hover:border-primary/50 transition-colors text-left group`}
+                >
+                  <div className={`p-2 rounded bg-surface/50 ${opt.color}`}>
+                    {opt.icon}
+                  </div>
+                  <span className="font-heading font-bold text-white uppercase tracking-widest">{opt.type} DIVISION</span>
+                </button>
+              ))}
+            </div>
+
+            <Button
+              variant="outline"
+              onClick={() => {
+                setOfficerTypeModalOpen(false);
+                setSelectedUserForOfficer(null);
+              }}
+              className="w-full text-xs font-mono uppercase"
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

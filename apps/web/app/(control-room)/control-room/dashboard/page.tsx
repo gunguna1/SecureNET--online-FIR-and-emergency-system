@@ -29,6 +29,7 @@ export default function ControlRoomDashboard() {
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Incident | null>(null);
   const [filter, setFilter] = useState("ALL");
+  const [availableUnits, setAvailableUnits] = useState({ POLICE: 0, FIRE: 0, AMBULANCE: 0 });
   const [liveCount, setLiveCount] = useState(0);
   const [isDispatching, setIsDispatching] = useState(false);
   const { connect, socket } = useSocketStore();
@@ -54,6 +55,8 @@ export default function ControlRoomDashboard() {
     try {
       const res = await fetchApi("/dispatch/active-incidents");
       setIncidents(res.data || []);
+      const unitsRes = await fetchApi("/dispatch/available-units");
+      if (unitsRes.data) setAvailableUnits(unitsRes.data);
     } catch (err: any) {
       console.error("Failed to load incidents:", err.message);
     } finally {
@@ -106,6 +109,20 @@ export default function ControlRoomDashboard() {
         </div>
         <div className="flex items-center gap-8">
           {/* KPI pills */}
+          <div className="flex items-center gap-4 border-r border-surface-border pr-4">
+            <div className="flex items-center gap-1.5 text-xs">
+              <Shield className="w-3.5 h-3.5 text-primary" />
+              <span className="font-mono text-white">{availableUnits.POLICE}</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs">
+              <Flame className="w-3.5 h-3.5 text-orange-500" />
+              <span className="font-mono text-white">{availableUnits.FIRE}</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs">
+              <Activity className="w-3.5 h-3.5 text-success" />
+              <span className="font-mono text-white">{availableUnits.AMBULANCE}</span>
+            </div>
+          </div>
           {[
             { label: "Active", value: activeCount, class: "text-danger" },
             { label: "Critical", value: criticalCount, class: "text-danger font-black" },
@@ -257,30 +274,39 @@ export default function ControlRoomDashboard() {
                   <div className="flex gap-3">
                     <Button
                       onClick={() => handleDispatch("POLICE")}
-                      disabled={isDispatching || selected.status === "RESOLVED"}
+                      disabled={isDispatching || selected.status === "RESOLVED" || availableUnits.POLICE === 0}
                       variant="outline"
-                      className="flex-1 border-primary/50 text-primary hover:bg-primary/20 hover:text-primary"
+                      className="flex-1 flex-col items-center justify-center py-6 h-auto border-primary/50 text-primary hover:bg-primary/20 hover:text-primary relative overflow-hidden group"
                     >
-                      <Shield className="w-4 h-4 mr-2" />
-                      DISPATCH POLICE
+                      <div className="absolute top-0 right-0 px-2 py-1 bg-black/60 text-[9px] font-mono border-b border-l border-primary/30">
+                        {availableUnits.POLICE} AVAIL
+                      </div>
+                      <Shield className="w-5 h-5 mb-1" />
+                      <span className="text-xs">DISPATCH POLICE</span>
                     </Button>
                     <Button
                       onClick={() => handleDispatch("MEDICAL")}
-                      disabled={isDispatching || selected.status === "RESOLVED"}
+                      disabled={isDispatching || selected.status === "RESOLVED" || availableUnits.AMBULANCE === 0}
                       variant="outline"
-                      className="flex-1 border-success/50 text-success hover:bg-success/20 hover:text-success"
+                      className="flex-1 flex-col items-center justify-center py-6 h-auto border-success/50 text-success hover:bg-success/20 hover:text-success relative overflow-hidden group"
                     >
-                      <Siren className="w-4 h-4 mr-2" />
-                      DISPATCH MEDICS
+                      <div className="absolute top-0 right-0 px-2 py-1 bg-black/60 text-[9px] font-mono border-b border-l border-success/30">
+                        {availableUnits.AMBULANCE} AVAIL
+                      </div>
+                      <Siren className="w-5 h-5 mb-1" />
+                      <span className="text-xs">DISPATCH MEDICS</span>
                     </Button>
                     <Button
                       onClick={() => handleDispatch("FIRE")}
-                      disabled={isDispatching || selected.status === "RESOLVED"}
+                      disabled={isDispatching || selected.status === "RESOLVED" || availableUnits.FIRE === 0}
                       variant="outline"
-                      className="flex-1 border-orange-500/50 text-orange-500 hover:bg-orange-500/20 hover:text-orange-500"
+                      className="flex-1 flex-col items-center justify-center py-6 h-auto border-orange-500/50 text-orange-500 hover:bg-orange-500/20 hover:text-orange-500 relative overflow-hidden group"
                     >
-                      <Flame className="w-4 h-4 mr-2" />
-                      DISPATCH FIRE
+                      <div className="absolute top-0 right-0 px-2 py-1 bg-black/60 text-[9px] font-mono border-b border-l border-orange-500/30">
+                        {availableUnits.FIRE} AVAIL
+                      </div>
+                      <Flame className="w-5 h-5 mb-1" />
+                      <span className="text-xs">DISPATCH FIRE</span>
                     </Button>
                   </div>
                 </div>

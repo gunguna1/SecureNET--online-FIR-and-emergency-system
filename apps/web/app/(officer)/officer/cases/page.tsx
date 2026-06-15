@@ -26,7 +26,7 @@ export default function OfficerCasesPage() {
     try {
       // Direct fetch to handle the binary stream
       const token = localStorage.getItem("token");
-      const url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"}/fir/${firId}/export`;
+      const url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api"}/fir/${firId}/export`;
       
       const response = await fetch(url, {
         headers: {

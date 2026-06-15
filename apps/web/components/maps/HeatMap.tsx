@@ -36,50 +36,56 @@ export default function HeatMap() {
   useEffect(() => {
     let isCancelled = false;
 
-    Promise.all([
-      import("leaflet"),
-      import("leaflet.heat") // This attaches itself to L natively
-    ]).then(([leaflet]) => {
+    import("leaflet").then((leaflet) => {
       if (isCancelled) return;
-      if (!mapContainerRef.current || (mapContainerRef.current as any)._leaflet_id) return;
       
       const L = leaflet.default || leaflet;
       
-      // Initialize map natively
-      const map = L.map(mapContainerRef.current, {
-        zoomControl: false,
-      }).setView([28.6139, 77.2090], 10);
-      
-      mapInstanceRef.current = map;
+      // Make L global for leaflet.heat
+      if (typeof window !== "undefined") {
+        (window as any).L = L;
+      }
 
-      // Add Tile Layer
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      }).addTo(map);
+      import("leaflet.heat").then(() => {
+        if (isCancelled) return;
+        if (!mapContainerRef.current || (mapContainerRef.current as any)._leaflet_id) return;
+        
+        // Initialize map natively
+        const map = L.map(mapContainerRef.current, {
+          zoomControl: false,
+        }).setView([28.6139, 77.2090], 10);
+        
+        mapInstanceRef.current = map;
 
-      // Create empty heat layer
-      // @ts-ignore - heatLayer is added by leaflet.heat plugin
-      if (L.heatLayer) {
-        // @ts-ignore
-        heatLayerRef.current = L.heatLayer([], {
-          radius: 25,
-          blur: 15,
-          maxZoom: 15,
-          gradient: {
-            0.0: "rgba(33,102,172,0)",
-            0.2: "rgb(103,169,207)",
-            0.4: "rgb(209,229,240)",
-            0.6: "rgb(253,219,199)",
-            0.8: "rgb(239,138,98)",
-            1.0: "rgb(178,24,43)"
-          }
+        // Add Tile Layer
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         }).addTo(map);
-      }
-      
-      // If we already fetched data before map loaded, render it
-      if (heatData.length > 0 && heatLayerRef.current) {
-        heatLayerRef.current.setLatLngs(heatData);
-      }
+
+        // Create empty heat layer
+        // @ts-ignore - heatLayer is added by leaflet.heat plugin
+        if (L.heatLayer) {
+          // @ts-ignore
+          heatLayerRef.current = L.heatLayer([], {
+            radius: 25,
+            blur: 15,
+            maxZoom: 15,
+            gradient: {
+              0.0: "rgba(33,102,172,0)",
+              0.2: "rgb(103,169,207)",
+              0.4: "rgb(209,229,240)",
+              0.6: "rgb(253,219,199)",
+              0.8: "rgb(239,138,98)",
+              1.0: "rgb(178,24,43)"
+            }
+          }).addTo(map);
+        }
+        
+        // If we already fetched data before map loaded, render it
+        if (heatData.length > 0 && heatLayerRef.current) {
+          heatLayerRef.current.setLatLngs(heatData);
+        }
+      });
     });
 
     return () => {

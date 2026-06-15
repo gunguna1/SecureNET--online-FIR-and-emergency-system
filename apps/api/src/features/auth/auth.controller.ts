@@ -70,6 +70,7 @@ export const register = async (req: Request, res: Response) => {
         lastName: user.lastName,
         email: user.email,
         role: user.role,
+        officerType: (user as any).officerType,
         token
       }
     });
@@ -119,6 +120,7 @@ export const login = async (req: Request, res: Response) => {
         lastName: user.lastName,
         email: user.email,
         role: user.role,
+        officerType: (user as any).officerType,
         token
       }
     });

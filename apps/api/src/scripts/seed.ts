@@ -13,8 +13,11 @@ const seedDB = async () => {
 
     // Clear existing data
     if (mongoose.connection.db) {
-      await mongoose.connection.db.dropDatabase();
-      console.log('Database dropped.');
+      const collections = await mongoose.connection.db.collections();
+      for (let collection of collections) {
+        await collection.deleteMany({});
+      }
+      console.log('Database collections cleared.');
     }
 
     const passwordHash = await bcrypt.hash('password123', 12);
@@ -50,7 +53,7 @@ const seedDB = async () => {
       trustedContacts: ['+919876543211'],
     });
 
-    const officer = await Officer.create({
+    const officer1 = await Officer.create({
       firstName: 'Jane',
       lastName: 'Smith',
       email: 'officer@securenet.com',
@@ -59,9 +62,40 @@ const seedDB = async () => {
       role: Role.OFFICER,
       isVerified: true,
       badgeNumber: 'POL-12345',
+      officerType: 'POLICE',
       stationId: policeStation._id,
       status: 'AVAILABLE',
       currentLocation: { type: 'Point', coordinates: [77.2091, 28.6138] },
+    });
+
+    const officer2 = await Officer.create({
+      firstName: 'Mike',
+      lastName: 'Johnson',
+      email: 'fire@securenet.com',
+      phone: '+919876543221',
+      passwordHash,
+      role: Role.OFFICER,
+      isVerified: true,
+      badgeNumber: 'FIR-12345',
+      officerType: 'FIRE',
+      stationId: policeStation._id,
+      status: 'AVAILABLE',
+      currentLocation: { type: 'Point', coordinates: [77.2092, 28.6139] },
+    });
+
+    const officer3 = await Officer.create({
+      firstName: 'Sarah',
+      lastName: 'Connor',
+      email: 'medic@securenet.com',
+      phone: '+919876543222',
+      passwordHash,
+      role: Role.OFFICER,
+      isVerified: true,
+      badgeNumber: 'AMB-12345',
+      officerType: 'AMBULANCE',
+      stationId: policeStation._id,
+      status: 'AVAILABLE',
+      currentLocation: { type: 'Point', coordinates: [77.2093, 28.6140] },
     });
 
     const controlRoom = await ControlRoomOperator.create({

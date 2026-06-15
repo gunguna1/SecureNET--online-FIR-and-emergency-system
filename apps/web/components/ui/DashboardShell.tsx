@@ -22,7 +22,13 @@ export default function DashboardShell({ children }: { children: React.ReactNode
     let allowed = false;
     if (pathname.startsWith("/authority") && user.role === "AUTHORITY") allowed = true;
     else if (pathname.startsWith("/control-room") && ["CONTROL_ROOM", "AUTHORITY"].includes(user.role)) allowed = true;
-    else if (pathname.startsWith("/officer") && user.role === "OFFICER") allowed = true;
+    else if (pathname.startsWith("/officer") && user.role === "OFFICER") {
+      if (pathname.startsWith("/officer/fir") && user.officerType !== "POLICE") {
+        allowed = false;
+      } else {
+        allowed = true;
+      }
+    }
     else if (pathname.startsWith("/citizen") && user.role === "CITIZEN") allowed = true;
 
     if (!allowed) {
