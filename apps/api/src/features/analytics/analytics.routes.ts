@@ -1,9 +1,12 @@
 import express from 'express';
-import { getDashboardKPIs, getCrimeTrends, getOfficerPerformance, getAuditLogs, getTimeTrends } from './analytics.controller';
+import { getDashboardKPIs, getCrimeTrends, getOfficerPerformance, getAuditLogs, getTimeTrends, getTopHeroes } from './analytics.controller';
 import { protect, authorize } from '../../middleware/auth';
 import { Role } from '../../models/User';
 
 const router = express.Router();
+
+// Public routes
+router.get('/heroes', getTopHeroes);
 
 router.use(protect);
 router.use(authorize(Role.AUTHORITY, Role.CONTROL_ROOM));

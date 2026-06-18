@@ -145,3 +145,57 @@ export const getTimeTrends = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
+
+export const getTopHeroes = async (req: Request, res: Response) => {
+  try {
+    const officers = await Officer.find().select('firstName lastName officerType _id');
+    
+    // Aggregate completed dispatches per officer
+    const dispatchStats = await DispatchRequest.aggregate([
+      { $match: { status: 'COMPLETED' } },
+      {
+        $group: {
+          _id: '$unitId',
+          casesResolved: { $sum: 1 },
+        }
+      }
+    ]);
+
+    const statsMap = new Map();
+    dispatchStats.forEach(stat => {
+      statsMap.set(stat._id.toString(), stat.casesResolved);
+    });
+
+    const heroes = {
+      POLICE: { name: '', casesResolved: -1, type: 'Police' },
+      FIRE: { name: '', casesResolved: -1, type: 'Fire' },
+      AMBULANCE: { name: '', casesResolved: -1, type: 'Medic' },
+    };
+
+    officers.forEach(o => {
+      if (!o.officerType) return;
+      
+      const casesResolved = statsMap.get(o._id.toString()) || 0;
+      
+      if (heroes[o.officerType] && casesResolved > heroes[o.officerType].casesResolved) {
+        heroes[o.officerType] = {
+          name: `${o.firstName} ${o.lastName}`,
+          casesResolved,
+          type: heroes[o.officerType].type,
+        };
+      }
+    });
+
+    // Format for frontend
+    const heroesList = Object.values(heroes).map(h => ({
+      name: h.name || 'Pending Data',
+      type: h.type,
+      casesResolved: h.casesResolved === -1 ? 0 : h.casesResolved,
+    }));
+
+    res.status(200).json({ success: true, data: heroesList });
+  } catch (error) {
+    console.error('Heroes error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
