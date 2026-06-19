@@ -5,77 +5,108 @@ The platform is designed to handle thousands of concurrent real-time connections
 ## Architecture Diagram
 
 ```mermaid
-graph TD
-    %% User Interfaces
-    subgraph Clients ["Client Layer"]
-        User["Citizens and Users<br>(Browser / Mobile Web)"]
-        Police["Law Enforcement / Admins<br>(Dashboard)"]
-    end
+graph TB
 
-    %% Frontend App
-    subgraph Frontend ["Frontend Next.js 15"]
-        NextUI["UI Components<br>(React, Tailwind)"]
-        State["State Management<br>(Zustand, React Query)"]
-        Maps["Geospatial Views<br>(Leaflet)"]
-        AuthFront["Authentication<br>(NextAuth)"]
-    end
+%% USERS
+Citizen[Citizen]
+Officer[Officer]
+ControlRoom[Control Room]
+Authority[Authority]
 
-    %% Load Balancing / Edge
-    Edge("Internet / CDN / Edge")
+%% FRONTEND
+subgraph Frontend["Frontend Layer"]
+    NextJS[Next.js 15
+    React • Tailwind
+    Zustand • React Query
+    Leaflet Maps]
+end
 
-    %% Backend API
-    subgraph Backend ["Backend API Node.js and Express"]
-        API["REST Endpoints<br>(Express)"]
-        AuthBack["Auth and Security<br>(JWT, bcrypt, Helmet)"]
-        PDF["Document Gen<br>(PDFKit)"]
-        Sockets["Real-Time Server<br>(Socket.io)"]
-    end
+%% LOAD BALANCER
+LB[Nginx / Load Balancer]
 
-    %% Data Layer
-    subgraph DataLayer ["Data Layer"]
-        DB[("MongoDB<br>(Primary Data Store)")]
-        Cache[("Redis<br>(Pub/Sub and Socket Adapter)")]
-    end
+%% BACKEND
+subgraph Backend["Backend Services"]
+    API1[Express API - Instance 1]
+    API2[Express API - Instance 2]
 
-    %% External Services
-    subgraph External ["External Services APIs"]
-        AWS(("AWS S3<br>(File/Media Storage)"))
-        Gemini(("Google GenAI<br>(AI Processing)"))
-        Email(("SMTP/Nodemailer<br>(Email Notifications)"))
-    end
+    Auth[JWT + RBAC]
 
-    %% Connections
-    User <-->|HTTPS / WSS| Edge
-    Police <-->|HTTPS / WSS| Edge
-    Edge <-->|Static Assets and API Routes| Frontend
-    Edge <-->|API Calls and WebSockets| Backend
-    
-    NextUI <--> API
-    State <--> AuthFront
-    
-    API <--> AuthBack
-    API <--> PDF
-    API <--> Sockets
+    Socket[Socket.io Server]
 
-    Backend <-->|Mongoose queries| DB
-    Sockets <-->|Redis Pub/Sub| Cache
-    
-    API --->|Media Uploads| AWS
-    API --->|AI Prompts/Analysis| Gemini
-    API --->|Alerts| Email
+    PDF[PDF Generation]
 
-    %% Styling
-    classDef client fill:#e0f7fa,stroke:#006064,stroke-width:2px;
-    classDef frontend fill:#fff3e0,stroke:#e65100,stroke-width:2px;
-    classDef backend fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px;
-    classDef data fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
-    classDef external fill:#ffebee,stroke:#b71c1c,stroke-width:2px;
+    AIFIR[AI FIR Drafting]
+end
 
-    class User,Police client;
-    class Frontend,NextUI,State,Maps,AuthFront frontend;
-    class Backend,API,AuthBack,PDF,Sockets backend;
-    class DataLayer,DB,Cache data;
-    class External,AWS,Gemini,Email external;
+%% DATA
+subgraph Data["Data Layer"]
+    Mongo[(MongoDB Atlas)]
+    Redis[(Redis Pub/Sub)]
+end
+
+%% EXTERNAL
+subgraph External["External Services"]
+    Gemini[Google Gemini AI]
+    S3[AWS S3 Storage]
+    Email[Email Notifications]
+end
+
+%% USERS TO FRONTEND
+Citizen --> NextJS
+Officer --> NextJS
+ControlRoom --> NextJS
+Authority --> NextJS
+
+%% FRONTEND TO LB
+NextJS --> LB
+
+%% LB TO APIS
+LB --> API1
+LB --> API2
+
+%% API SERVICES
+API1 --> Auth
+API2 --> Auth
+
+API1 --> Socket
+API2 --> Socket
+
+API1 --> PDF
+API2 --> PDF
+
+API1 --> AIFIR
+API2 --> AIFIR
+
+%% DATA CONNECTIONS
+API1 --> Mongo
+API2 --> Mongo
+
+Socket --> Redis
+
+%% EXTERNAL SERVICES
+AIFIR --> Gemini
+
+API1 --> S3
+API2 --> S3
+
+API1 --> Email
+API2 --> Email
+
+%% SOS FLOW
+Citizen -. SOS Alert .-> NextJS
+NextJS -. Emergency Request .-> API1
+
+API1 -. Broadcast Event .-> Socket
+
+Socket -. New Incident .-> ControlRoom
+
+ControlRoom -. Assign Officer .-> Officer
+
+Officer -. Status Update .-> API2
+
+API2 -. Live Update .-> Socket
+
+Socket -. Notification .-> Citizen
 ```
 
 ## Component Breakdown
