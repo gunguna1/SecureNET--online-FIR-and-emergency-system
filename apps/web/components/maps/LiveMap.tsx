@@ -71,9 +71,11 @@ export default function LiveMap({
       
       mapInstanceRef.current = map;
 
-      // Add Tile Layer
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      // Add CartoDB Dark Matter Tile Layer
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: "abcd",
+        maxZoom: 20,
       }).addTo(map);
 
       // Define Icons
@@ -207,7 +209,7 @@ export default function LiveMap({
 
   return (
     <div className="relative w-full h-full min-h-[300px] rounded-xl overflow-hidden shadow-lg border border-slate-800 z-0">
-      <div ref={mapContainerRef} style={{ height: "100%", width: "100%", background: "#0f172a" }} />
+      <div ref={mapContainerRef} style={{ height: "100%", width: "100%", background: "#0a0a0a" }} />
 
       {/* HUD overlay */}
       <div className="absolute top-4 left-4 bg-slate-900/90 backdrop-blur border border-slate-700 p-2 rounded-lg text-xs font-semibold text-slate-200 z-[1000] shadow-lg pointer-events-none">
@@ -222,7 +224,11 @@ export default function LiveMap({
           border: none;
         }
         .leaflet-container {
-          background: #0f172a !important;
+          background: #000000 !important;
+          font-family: inherit !important;
+        }
+        .leaflet-tile-pane {
+          filter: brightness(0.9) contrast(1.1) grayscale(0.5);
         }
       `}} />
     </div>

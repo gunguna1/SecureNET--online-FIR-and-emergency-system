@@ -27,7 +27,7 @@ export default function OfficerFieldMap() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (token) connect(token);
+    if (token) connect();
     fetchActiveDispatch();
   }, []);
 
@@ -96,8 +96,7 @@ export default function OfficerFieldMap() {
     <div className="h-[calc(100vh-100px)] flex flex-col -m-4 slide-in">
       {/* Top Bar */}
       <div
-        className="flex items-center justify-between px-6 py-3 flex-shrink-0"
-        style={{ background: "rgba(7,20,38,0.9)", borderBottom: "1px solid var(--clr-border)" }}
+        className="flex items-center justify-between px-6 py-4 flex-shrink-0 bg-surface/80 backdrop-blur-md border-b border-surface-border"
       >
         <div className="flex items-center gap-3">
           <a href="/officer/dashboard" className="text-slate-400 hover:text-white transition-colors text-sm">
@@ -168,8 +167,7 @@ export default function OfficerFieldMap() {
 
         {/* Floating Info Card */}
         <div
-          className="absolute bottom-6 left-6 right-6 md:right-auto md:w-80 rounded-2xl p-5 shadow-2xl z-[1000]"
-          style={{ background: "rgba(7,20,38,0.95)", border: "1px solid var(--clr-border)", backdropFilter: "blur(12px)" }}
+          className="absolute bottom-6 left-6 right-6 md:right-auto md:w-80 rounded-2xl p-6 glass-card shadow-[0_20px_50px_rgba(0,0,0,0.8)] border border-surface-border backdrop-blur-xl z-[1000]"
         >
           <div className="flex items-center gap-2 mb-3">
             <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
