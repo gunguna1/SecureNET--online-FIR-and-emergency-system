@@ -26,4 +26,12 @@ Field units (Police, Fire, Medical) have access to dedicated **Field Navigation*
 - **Dynamic ETA**: Displays live Estimated Time of Arrival updates.
 - **Cross-Platform Visibility**: The exact location of the responding unit is shared synchronously with both the citizen in distress and the central control room.
 
-> **Note**: To ensure the images render correctly on GitHub, please save your screenshots as `command_center_map.png` and `field_navigation_map.png` in the `images` folder of this repository.
+> **Note**: To ensure the images render correctly on GitHub, please save your screenshots as `command_center_map.png`, `field_navigation_map.png`, and `incident_and_operative_analysis.png` in the `images` folder of this repository.
+
+---
+
+## Incident & Operative Analysis
+
+Detailed view of the incident statistics and operative metrics to ensure maximum efficiency.
+
+![Incident and Operative Analysis](./images/incident_and_operative_analysis.png)
