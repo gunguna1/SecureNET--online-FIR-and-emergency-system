@@ -1,3 +1,4 @@
+
 <div align="center">
   
   <img src="https://img.icons8.com/nolan/96/police-badge.png" alt="SecureNET Logo" width="80" />
@@ -130,3 +131,7 @@ SecureNET was built with a "Secure by Default" mentality:
   <br />
   <p><b>SecureNET</b> - Building the future of rapid response technology.</p>
 </div>
+
+
+## just for a daily login , hihi
+## daily commit 2
