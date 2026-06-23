@@ -143,3 +143,54 @@ export const getMe = async (req: any, res: Response) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
+
+const updateProfileSchema = z.object({
+  firstName: z.string().min(2).optional(),
+  lastName: z.string().min(2).optional(),
+  phone: z.string().min(10).optional(),
+  password: z.string().min(6).optional(),
+});
+
+export const updateProfile = async (req: any, res: Response) => {
+  try {
+    const validatedData = updateProfileSchema.parse(req.body);
+    const { firstName, lastName, phone, password } = validatedData;
+    
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    if (firstName) user.firstName = firstName;
+    if (lastName) user.lastName = lastName;
+    if (phone) user.phone = phone;
+    
+    if (password) {
+      user.passwordHash = await bcrypt.hash(password, 12);
+    }
+    
+    await user.save();
+    
+    res.status(200).json({
+      success: true,
+      data: {
+        id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+      }
+    });
+  } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Validation failed: ' + error.errors.map((e: any) => `${e.path.join('.')}: ${e.message}`).join(', '),
+        errors: error.errors 
+      });
+    }
+    console.error('Update profile error:', error);
+    res.status(500).json({ success: false, message: error.message || 'Server error' });
+  }
+};

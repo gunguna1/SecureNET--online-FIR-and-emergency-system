@@ -133,7 +133,7 @@ export default function LoginPage() {
         <div className="mt-3 space-y-1.5 font-mono">
           <div><span className="text-accent">CIT</span>: citizen@securenet.com / password123</div>
           <div><span className="text-accent">OFC</span>: officer@securenet.com / password123</div>
-          <div><span className="text-accent">ADM</span>: admin@securenet.com / password123</div>
+          <div><span className="text-accent">CTL</span>: control@securenet.com / password123</div>
         </div>
       </div>
     </>

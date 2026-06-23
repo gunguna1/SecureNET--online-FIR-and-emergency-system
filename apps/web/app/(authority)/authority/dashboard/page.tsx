@@ -152,7 +152,7 @@ export default function AuthorityDashboard() {
         {/* Crime Type Distribution Pie Chart */}
         <div className="glass-card p-6 h-[450px] flex flex-col">
           <h2 className="font-heading font-black text-white uppercase tracking-widest flex items-center gap-2 mb-4 pb-4 border-b border-surface-border">
-            <PieChartIcon className="w-5 h-5 text-accent" /> INCIDENT CLASSIFICATION
+            <PieChartIcon className="w-5 h-5 text-accent" /> FIR CLASSIFICATION
           </h2>
           <div className="flex-1 min-h-0 relative">
             <ResponsiveContainer width="100%" height="100%">

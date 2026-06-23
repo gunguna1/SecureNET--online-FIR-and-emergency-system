@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Rajdhani } from "next/font/google";
 import "./globals.css";
+import { Footer } from "../components/Footer";
 
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-inter" });
 const rajdhani = Rajdhani({ subsets: ["latin"], variable: "--font-montserrat", weight: ["400", "500", "600", "700"] });
@@ -24,8 +25,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className={`${spaceGrotesk.variable} ${rajdhani.variable} antialiased bg-black text-foreground`}>
-        {children}
+      <body className={`${spaceGrotesk.variable} ${rajdhani.variable} antialiased bg-black text-foreground flex flex-col min-h-screen`}>
+        <div className="flex-grow flex flex-col">
+          {children}
+        </div>
+        <Footer />
       </body>
     </html>
   );

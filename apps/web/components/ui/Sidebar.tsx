@@ -16,7 +16,7 @@ const CITIZEN_NAV: NavItem[] = [
   { href: "/citizen/dashboard",  icon: <Home className="w-5 h-5" />, label: "Dashboard" },
   { href: "/citizen/sos",        icon: <AlertTriangle className="w-5 h-5" />, label: "SOS Emergency" },
   { href: "/citizen/complaints", icon: <FileText className="w-5 h-5" />, label: "My Complaints" },
-  { href: "/citizen/fir",        icon: <FileText className="w-5 h-5" />, label: "FIR Status" },
+  { href: "/citizen/guidelines", icon: <FileText className="w-5 h-5" />, label: "FIR Guidelines" },
   { href: "/citizen/track",      icon: <Map className="w-5 h-5" />, label: "Live Tracking" },
   { href: "/citizen/profile",    icon: <User className="w-5 h-5" />, label: "Profile" },
 ];
@@ -84,7 +84,7 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="sidebar w-64 flex flex-col py-6 px-4 sticky top-0 h-screen font-sans">
+    <aside className="sidebar w-64 flex flex-col py-6 px-4 fixed left-0 top-0 h-screen font-sans border-r border-surface-border bg-black/80 backdrop-blur-md z-40">
       {/* Logo */}
       <Link href="/" className="flex items-center gap-3 px-2 mb-10">
         <Shield className="w-8 h-8 text-white" />

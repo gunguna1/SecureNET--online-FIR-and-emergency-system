@@ -54,7 +54,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
       {/* Content */}
       <div className="relative z-10 flex w-full h-full">
         <Sidebar />
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto p-6 ml-64 min-h-screen">{children}</main>
       </div>
     </div>
   );

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { Shield, MapPin, Activity, Bell, Map, Users, MessageCircle, Linkedin, Github, Instagram, User as UserIcon } from "lucide-react";
 import { Button } from "../components/ui/Button";
 
@@ -10,31 +11,37 @@ const features = [
     icon: <Bell className="w-6 h-6" />,
     title: "One-Tap SOS",
     desc: "Instant emergency dispatch with auto GPS capture. Police, Ambulance & Fire in seconds.",
+    image: "/images/features/one_tap_sos_v2.png"
   },
   {
     icon: <MapPin className="w-6 h-6" />,
     title: "Live Tracking",
     desc: "Real-time responder location sharing via encrypted high-speed streams.",
+    image: "/images/features/live_tracking_v2.png"
   },
   {
     icon: <Shield className="w-6 h-6" />,
     title: "Digital FIR",
     desc: "File, track and export First Information Reports with digital signatures.",
+    image: "/images/features/digital_fir_v2.png"
   },
   {
     icon: <Activity className="w-6 h-6" />,
     title: "AI Assistant",
     desc: "Smart complaint classification and priority scoring powered by intelligent models.",
+    image: "/images/features/ai_assistant_v2.png"
   },
   {
     icon: <Map className="w-6 h-6" />,
     title: "Crime Analytics",
     desc: "City-wide heatmaps, trend charts, and real-time command center view.",
+    image: "/images/features/crime_analytics_v2.png"
   },
   {
     icon: <Users className="w-6 h-6" />,
     title: "Zero-Trust Security",
     desc: "End-to-end encryption, strict RBAC, audit logs, and tamper detection.",
+    image: "/images/features/zero_trust_security_v2.png"
   },
 ];
 
@@ -188,40 +195,65 @@ export default function Home() {
 
       {/* Tactical Features Section */}
       <section id="features" className="relative z-10 w-full bg-black py-32 px-8 border-t border-surface-border">
-        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-16 items-center">
+        <div className="max-w-7xl mx-auto flex flex-col gap-24 items-center">
           
-          <div className="lg:w-1/2 relative">
-            <div className="absolute -inset-4 bg-accent/5 rounded-xl blur-2xl"></div>
-            <div className="relative glass-card p-8 aspect-square flex flex-col justify-center border-accent/20">
-              <h3 className="font-heading font-black text-5xl text-white uppercase tracking-tighter mb-4">
-                Stop Reacting.
-              </h3>
-              <h4 className="font-heading font-bold text-2xl text-accent uppercase tracking-widest mb-8">
-                Intelligent Dispatch
-              </h4>
-              <p className="text-muted leading-relaxed text-lg">
-                By analysing the realities of emergency response, we've built a unified platform identifying key challenges, performance KPIs, and non-negotiables required to maintain peak operational readiness.
-              </p>
-              <div className="mt-12">
-                <Button>View Analytics</Button>
-              </div>
+          <div className="text-center mb-16 max-w-4xl mx-auto">
+            <h3 className="font-heading font-black text-5xl md:text-6xl text-white uppercase tracking-tighter mb-4">
+              Stop Reacting.
+            </h3>
+            <h4 className="font-heading font-bold text-2xl md:text-3xl text-accent uppercase tracking-widest mb-8">
+              Intelligent Dispatch
+            </h4>
+            <p className="text-muted leading-relaxed text-lg md:text-xl">
+              By analysing the realities of emergency response, we've built a unified platform identifying key challenges, performance KPIs, and non-negotiables required to maintain peak operational readiness.
+            </p>
+            <div className="mt-12">
+              <Link href="/login">
+                <Button size="lg">Access Control Room</Button>
+              </Link>
             </div>
           </div>
 
-          <div className="lg:w-1/2 grid grid-cols-1 md:grid-cols-2 gap-6">
-            {features.map((f, i) => (
-              <div key={i} className="glass-card p-6 border-surface-border hover:border-accent/40 transition-colors">
-                <div className="w-12 h-12 rounded bg-surface border border-surface-border flex items-center justify-center text-accent mb-6">
-                  {f.icon}
+          <div className="flex flex-col gap-32 w-full">
+            {features.map((f, i) => {
+              const isEven = i % 2 === 0;
+              return (
+                <div key={i} className={`flex flex-col gap-16 items-center w-full ${isEven ? 'lg:flex-row' : 'lg:flex-row-reverse'}`}>
+                  {/* Image Container */}
+                  <motion.div 
+                    initial={{ opacity: 0, x: isEven ? -100 : 100 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true, margin: "-100px" }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                    className={`w-full lg:w-1/2 flex justify-center ${isEven ? 'lg:justify-end' : 'lg:justify-start'}`}
+                  >
+                    <div className="relative w-full max-w-[400px] aspect-video lg:aspect-[4/3] rounded-xl overflow-hidden border border-surface-border group shadow-[0_0_25px_rgba(245,158,11,0.08)] hover:shadow-[0_0_35px_rgba(245,158,11,0.15)] transition-shadow duration-500">
+                      <div className="absolute inset-0 bg-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10 pointer-events-none"></div>
+                      <img src={f.image} alt={f.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                    </div>
+                  </motion.div>
+
+                  {/* Text Container */}
+                  <motion.div 
+                    initial={{ opacity: 0, x: isEven ? 100 : -100 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true, margin: "-100px" }}
+                    transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+                    className={`w-full lg:w-1/2 flex flex-col justify-center ${isEven ? 'lg:pl-8' : 'lg:pr-8'}`}
+                  >
+                    <div className="w-16 h-16 rounded-xl bg-surface border border-surface-border flex items-center justify-center text-accent mb-8 shadow-[0_0_30px_rgba(255,165,0,0.15)]">
+                      {f.icon}
+                    </div>
+                    <h5 className="font-heading font-black text-4xl text-white uppercase tracking-wider mb-6">
+                      {f.title}
+                    </h5>
+                    <p className="text-xl text-muted leading-relaxed max-w-lg">
+                      {f.desc}
+                    </p>
+                  </motion.div>
                 </div>
-                <h5 className="font-heading font-bold text-white uppercase tracking-wider mb-3">
-                  {f.title}
-                </h5>
-                <p className="text-sm text-muted leading-relaxed">
-                  {f.desc}
-                </p>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
         </div>
@@ -271,30 +303,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer id="contact" className="border-t border-surface-border bg-[#050505] py-16 px-8 flex flex-col items-center text-center">
-        <Shield className="w-8 h-8 text-white mb-8 opacity-20" />
-        
-        {/* Socials */}
-        <div className="flex items-center gap-6 mb-8">
-          <a href="https://wa.me/919256857504" target="_blank" rel="noopener noreferrer" className="p-3 rounded bg-surface border border-surface-border text-muted hover:text-accent hover:border-accent/50 hover:bg-accent/10 transition-all">
-            <MessageCircle className="w-5 h-5" />
-          </a>
-          <a href="https://www.linkedin.com/in/anshik-yadav-681664287/" target="_blank" rel="noopener noreferrer" className="p-3 rounded bg-surface border border-surface-border text-muted hover:text-accent hover:border-accent/50 hover:bg-accent/10 transition-all">
-            <Linkedin className="w-5 h-5" />
-          </a>
-          <a href="https://github.com/gunguna1" target="_blank" rel="noopener noreferrer" className="p-3 rounded bg-surface border border-surface-border text-muted hover:text-accent hover:border-accent/50 hover:bg-accent/10 transition-all">
-            <Github className="w-5 h-5" />
-          </a>
-          <a href="https://www.instagram.com/anshqk/" target="_blank" rel="noopener noreferrer" className="p-3 rounded bg-surface border border-surface-border text-muted hover:text-accent hover:border-accent/50 hover:bg-accent/10 transition-all">
-            <Instagram className="w-5 h-5" />
-          </a>
-        </div>
 
-        <p className="text-xs font-heading font-bold text-muted uppercase tracking-widest">
-          Vanguard Operations Command © 2026 SecureNet Technologies.
-        </p>
-      </footer>
     </div>
   );
 }
