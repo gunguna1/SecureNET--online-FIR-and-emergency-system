@@ -81,31 +81,72 @@ We name this package `@securenet/shared` in its `package.json`:
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc"
+  },
+  "dependencies": {
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "^5"
   }
 }
 ```
 
+We also configure the `tsconfig.json` so the TypeScript compiler knows how to build it:
+```json
+{
+  "compilerOptions": {
+    "target": "es2016",
+    "module": "commonjs",
+    "declaration": true,
+    "outDir": "./dist",
+    "strict": true
+  },
+  "include": ["src/**/*"]
+}
+```
+
 ## 2.2 Writing the Shared Schemas
-We create `packages/shared/src/index.ts`. Here, we define the Zod schemas that will be used for both Backend Validation and Frontend Form checking.
+We create `packages/shared/src/index.ts`. Here, we define the Zod schemas that will be used for both Backend Validation and Frontend Form checking, ensuring a Single Source of Truth.
 
 ```typescript
 // packages/shared/src/index.ts
 import { z } from 'zod';
 
-export const IncidentSchema = z.object({
-  title: z.string().min(5, "Title must be at least 5 characters"),
-  description: z.string(),
-  location: z.object({
-    longitude: z.number(),
-    latitude: z.number()
-  }),
-  type: z.enum(['POLICE', 'FIRE', 'MEDICAL', 'GENERAL_SOS']),
-  status: z.enum(['PENDING', 'DISPATCHED', 'RESOLVED']).default('PENDING')
-});
+// Shared Enums
+export enum Role {
+  CITIZEN = 'CITIZEN',
+  OFFICER = 'OFFICER',
+  CONTROL_ROOM = 'CONTROL_ROOM',
+  ADMIN = 'ADMIN',
+}
 
-export type Incident = z.infer<typeof IncidentSchema>;
+export enum ComplaintType {
+  CIVIL = 'CIVIL',
+  CRIMINAL = 'CRIMINAL',
+  // ...other types
+}
+
+// Auth Schemas
+export const registerSchema = z.object({
+  firstName: z.string().min(2),
+  lastName: z.string().min(2),
+  email: z.string().email(),
+  password: z.string().min(6),
+});
+export const loginSchema = z.object({ /*...*/ });
+
+// SOS & Dispatch Schemas
+export const createSosSchema = z.object({
+  coordinates: z.tuple([z.number(), z.number()]),
+  servicesRequired: z.array(z.string()).min(1),
+});
+export const createDispatchSchema = z.object({
+  incidentId: z.string(),
+  unitType: z.enum(['POLICE', 'MEDICAL', 'FIRE']),
+});
+// ... plus schemas for FIR, Complaints, etc.
 ```
-We then run `npm run build` inside `packages/shared` so the types are available to the rest of the workspace.
+We then run `npm run build` inside `packages/shared` so the `dist/` JS and type declarations are available to the rest of the workspace.
 
 ---
 
@@ -259,15 +300,18 @@ Because we are using a Feature architecture, logic is split by domain. Creating 
 ```typescript
 import { Request, Response } from 'express';
 import { Incident, IncidentSeverity, IncidentStatus } from '../../models/Incident';
-import { z } from 'zod';
+import { createSosSchema } from '@securenet/shared';
 
 export const triggerSOS = async (req: AuthRequest, res: Response) => {
-    // Validate data using Zod
+    // Validate data using the Shared Zod Package!
+    const validatedData = createSosSchema.parse(req.body);
+    const { coordinates, servicesRequired } = validatedData;
+    
     // Create the initial Incident in the DB
     const incident = await Incident.create({
       citizenId: req.user!.id,
-      location: { type: 'Point', coordinates: [lng, lat] },
-      servicesRequired: ['POLICE'],
+      location: { type: 'Point', coordinates },
+      servicesRequired,
       severity: IncidentSeverity.CRITICAL,
       status: IncidentStatus.SOS_SENT,
     });
@@ -398,17 +442,38 @@ Now we build the client side.
 cd apps
 npx create-next-app@15 web
 ```
-During setup, we choose: TypeScript (Yes), Tailwind CSS (Yes), App Router (Yes), `src/` directory (Yes).
+During setup, we choose: TypeScript (Yes), Tailwind CSS (Yes), App Router (Yes), `src/` directory (No).
 
 We update `apps/web/package.json` to name it `web` and link the shared package:
 ```json
   "name": "web",
   "dependencies": {
-    "@securenet/shared": "*"
+    "@securenet/shared": "*",
+    "lucide-react": "^0.471.0",
+    "framer-motion": "^11.16.1"
   }
 ```
 
-## 7.2 Styling & Theming (Dark Glassmorphism)
+## 7.2 Directory Structure & Route Groups
+To organize the frontend by user roles without affecting the URL path, we use Next.js Route Groups.
+```bash
+mkdir apps/web/app/(citizen)
+mkdir apps/web/app/(officer)
+mkdir apps/web/app/(control-room)
+mkdir apps/web/app/(auth)
+```
+Each of these folders will have its own `layout.tsx` for role-specific navigation menus (e.g., the Control Room gets a sidebar, while Citizens get a mobile-friendly bottom nav).
+
+## 7.3 Environment Variables
+We must ensure our frontend knows where the backend is. We define `.env` at the root of the workspace:
+```env
+# root .env
+PORT=5001
+NEXT_PUBLIC_API_URL=http://localhost:5001/api
+```
+*Crucial Step*: Ensure `apps/api/.env` also has `PORT=5001` so the API actually listens on the port the frontend expects!
+
+## 7.4 Styling & Theming (Dark Glassmorphism)
 We want a tactical, dark, high-tech UI. We edit `tailwind.config.ts`.
 
 ```typescript
@@ -416,17 +481,19 @@ import type { Config } from 'tailwindcss'
 
 const config: Config = {
   content: [
-    './src/**/*.{js,ts,jsx,tsx,mdx}',
-    './components/**/*.{js,ts,jsx,tsx,mdx}',
     './app/**/*.{js,ts,jsx,tsx,mdx}',
+    './components/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
     extend: {
       colors: {
         background: '#0a0a0a',
         surface: 'rgba(20, 20, 20, 0.7)',
+        'surface-border': 'rgba(255, 255, 255, 0.1)',
         primary: '#3b82f6',
         danger: '#ef4444',
+        accent: '#f59e0b',
+        success: '#10b981',
       },
       backdropBlur: {
         xs: '2px',
@@ -438,7 +505,7 @@ const config: Config = {
 export default config
 ```
 
-In `apps/web/app/globals.css`, we set the dark background:
+In `apps/web/app/globals.css`, we set the dark background and create reusable utility classes:
 ```css
 @tailwind base;
 @tailwind components;
@@ -450,9 +517,37 @@ body {
 }
 
 /* Glassmorphism Utility Class */
-.glass-panel {
-  @apply bg-surface backdrop-blur-md border border-white/10 rounded-xl shadow-lg;
+.glass-card {
+  @apply bg-surface backdrop-blur-md border border-surface-border rounded-xl shadow-lg;
 }
+```
+
+## 7.5 Reusable UI Components
+We create reusable, highly styled components like `apps/web/components/ui/Button.tsx`:
+```tsx
+import * as React from "react"
+import { Slot } from "@radix-ui/react-slot"
+
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  asChild?: boolean
+  variant?: 'default' | 'destructive' | 'outline' | 'ghost'
+  size?: 'default' | 'sm' | 'lg' | 'icon'
+}
+
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className = "", variant = "default", size = "default", asChild = false, ...props }, ref) => {
+    const Comp = asChild ? Slot : "button"
+    
+    // Base classes for glass UI styling
+    let classes = "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 "
+    
+    // Add variant and size logic here...
+    
+    return <Comp className={classes + className} ref={ref} {...props} />
+  }
+)
+Button.displayName = "Button"
+export { Button }
 ```
 
 ---
@@ -553,20 +648,21 @@ import { io } from 'socket.io-client';
 const LiveMap = dynamic(() => import('../../components/maps/LiveMap'), { ssr: false });
 
 export default function ControlRoom() {
-    const [incidents, setIncidents] = useState([]);
+    const [incidents, setIncidents] = useState<any[]>([]);
 
     useEffect(() => {
-        // Connect to our Backend Socket
-        const socket = io('http://localhost:5000');
+        // Connect to our Backend Socket using the env variable
+        const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:5001');
         
-        socket.emit('JOIN_ROOM', 'control-room');
+        socket.emit('JOIN_ROOM', 'role:CONTROL_ROOM');
 
         socket.on('sos:new', (incident) => {
             // Reformat DB location object to Leaflet format
             const mapPin = {
                 id: incident._id,
                 lat: incident.location.coordinates[1],
-                lng: incident.location.coordinates[0]
+                lng: incident.location.coordinates[0],
+                status: incident.status
             };
             setIncidents(prev => [...prev, mapPin]);
         });
@@ -575,10 +671,10 @@ export default function ControlRoom() {
     }, []);
 
     return (
-        <div className="p-8">
-            <h1 className="text-3xl font-bold mb-6 text-danger">Active Emergencies</h1>
-            <div className="glass-panel p-2">
-                <LiveMap center={[20.5937, 78.9629]} incidents={incidents} />
+        <div className="p-8 h-screen flex flex-col">
+            <h1 className="text-3xl font-heading font-black mb-6 text-danger uppercase">Command Center</h1>
+            <div className="glass-card p-2 flex-1 relative">
+                <LiveMap center={[28.6139, 77.2090]} incidents={incidents} />
             </div>
         </div>
     );
@@ -646,19 +742,65 @@ export default router;
 ```
 *We attach this router to `index.ts`.*
 
+## 9.3 Frontend FIR Drafter UI
+In `apps/web/app/(officer)/officer/fir/draft/page.tsx`, we build the interface where officers paste rough notes:
+```tsx
+'use client';
+import { useState } from 'react';
+import { Button } from '@/components/ui/Button';
+
+export default function FIRDrafter() {
+    const [rawNotes, setRawNotes] = useState('');
+    const [draft, setDraft] = useState<any>(null);
+
+    const handleDraft = async () => {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ai/fir/draft`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ rawStatement: rawNotes })
+        });
+        const data = await res.json();
+        setDraft(data);
+    };
+
+    return (
+        <div className="p-8 max-w-4xl mx-auto">
+            <h1 className="text-3xl font-heading font-black text-white mb-6 uppercase">AI FIR Drafter</h1>
+            <textarea 
+                className="w-full h-40 bg-surface border border-surface-border rounded-xl p-4 text-white focus:outline-none focus:border-primary mb-4"
+                placeholder="Paste rough citizen statement here..."
+                value={rawNotes}
+                onChange={(e) => setRawNotes(e.target.value)}
+            />
+            <Button onClick={handleDraft} size="lg" className="w-full">Generate Formal FIR</Button>
+
+            {draft && (
+                <div className="mt-8 glass-card p-6">
+                    <h2 className="text-xl text-primary font-bold mb-4">Generated FIR</h2>
+                    <pre className="text-sm text-gray-300 whitespace-pre-wrap">
+                        {JSON.stringify(draft, null, 2)}
+                    </pre>
+                </div>
+            )}
+        </div>
+    );
+}
+```
+
 ---
 
-# Part 10: The Citizen "SOS" Interface
-
-We build the actual button the user presses.
-In `apps/web/app/(citizen)/page.tsx`:
+## 10.1 The SOS Trigger
+In `apps/web/app/(citizen)/citizen/sos/page.tsx`:
 
 ```tsx
 'use client';
 import { useState, useEffect } from 'react';
+import { ShieldAlert } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function CitizenPortal() {
-    const [userLocation, setUserLocation] = useState(null);
+    const router = useRouter();
+    const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
     const [loading, setLoading] = useState(false);
 
     // Get GPS on load
@@ -675,7 +817,7 @@ export default function CitizenPortal() {
         setLoading(true);
         
         // Send request to our Express Backend SOS controller
-        await fetch('http://localhost:5000/api/sos', {
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/sos`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -685,24 +827,86 @@ export default function CitizenPortal() {
         });
         
         setLoading(false);
-        alert("SOS Broadcasted! Officers are on the way.");
+        // Redirect to Live Tracking page
+        router.push('/citizen/track');
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-background">
-            <div className="glass-panel p-10 flex flex-col items-center">
-                <div className="w-48 h-48 rounded-full bg-danger/20 flex items-center justify-center animate-pulse">
+        <div className="flex items-center justify-center min-h-[80vh] bg-background">
+            <div className="flex flex-col items-center">
+                <div className="w-64 h-64 rounded-full bg-danger/10 flex items-center justify-center animate-pulse border border-danger/30 relative">
+                    {/* Ripple effect rings */}
+                    <div className="absolute inset-0 rounded-full border border-danger/50 animate-ping"></div>
                     <button 
                         onClick={handleSOS}
                         disabled={loading}
-                        className="w-40 h-40 rounded-full bg-danger text-white font-bold text-3xl shadow-[0_0_50px_rgba(239,68,68,0.5)] hover:scale-105 transition-transform"
+                        className="w-48 h-48 rounded-full bg-danger text-white font-heading font-black tracking-widest text-4xl shadow-[0_0_80px_rgba(239,68,68,0.6)] hover:scale-105 transition-transform flex flex-col items-center justify-center gap-2"
                     >
-                        {loading ? 'SENDING...' : 'SOS'}
+                        <ShieldAlert className="w-12 h-12" />
+                        {loading ? 'SENDING' : 'SOS'}
                     </button>
                 </div>
             </div>
         </div>
     );
+}
+```
+
+## 10.2 Live Tracking View
+Once SOS is triggered, citizens are redirected to `apps/web/app/(citizen)/citizen/track/page.tsx` where they see real-time ETA and distance of the responding unit.
+
+```tsx
+'use client';
+import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
+import { Siren, Clock } from "lucide-react";
+
+const ControlRoomMap = dynamic(() => import("@/components/maps/ControlRoomMap"), { ssr: false });
+
+export default function CitizenTrack() {
+  const [eta, setEta] = useState(4);
+  const [distance, setDistance] = useState(1.2);
+
+  // In reality, this data is updated via WebSockets
+  // socket.on('unit_moved', (data) => setDistance(data.newDistance));
+
+  return (
+    <div className="h-screen flex flex-col bg-black text-white relative">
+      <div className="flex-1 relative">
+        {/* Render Map */}
+        <ControlRoomMap incidents={[]} />
+      </div>
+
+      {/* Bottom Information Panel */}
+      <div className="absolute bottom-6 left-6 right-6 z-[1000] flex justify-center">
+        <div className="w-full max-w-4xl glass-card rounded-xl p-6 shadow-2xl flex items-center gap-8 bg-black/90">
+          <div className="flex-1">
+            <h2 className="font-heading font-black text-2xl uppercase text-danger mb-1">Unit Dispatched</h2>
+            <div className="flex items-center gap-4 text-xs font-mono text-muted uppercase">
+              <span className="flex items-center gap-1"><Siren className="w-4 h-4" /> Vehicle #DL-1C-4589</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-8 border-l border-surface-border pl-8">
+            <div>
+              <p className="text-xs font-bold text-muted uppercase mb-1">ETA</p>
+              <div className="flex items-baseline gap-1">
+                <span className="font-black text-3xl text-primary">{eta}</span>
+                <span className="text-xs text-primary">MIN</span>
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-bold text-muted uppercase mb-1">Distance</p>
+              <div className="flex items-baseline gap-1">
+                <span className="font-black text-3xl">{distance}</span>
+                <span className="text-xs text-muted">KM</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 ```
 
@@ -798,6 +1002,32 @@ Back in `apps/api/src/features/ai/ai.routes.ts`:
 
   export default router;
 ```
+
+## 11.4 Frontend Auth Handling (Next.js)
+Because we use `HttpOnly` cookies, the frontend doesn't need to manually attach the token to every request; the browser does it automatically. However, we still need to handle `401 Unauthorized` responses if the token expires.
+
+In `apps/web/lib/api.ts`, we create a custom fetch wrapper:
+```typescript
+export async function fetchWithAuth(url: string, options: RequestInit = {}) {
+    // Ensure cookies are sent with the request
+    const opts = {
+        ...options,
+        credentials: 'include' as RequestCredentials,
+    };
+
+    const response = await fetch(url, opts);
+
+    if (response.status === 401) {
+        // Token expired or invalid, redirect to login
+        if (typeof window !== 'undefined') {
+            window.location.href = '/auth/login';
+        }
+    }
+
+    return response;
+}
+```
+All authenticated frontend components will use `fetchWithAuth` instead of the standard `fetch`.
 
 ---
 

@@ -5,9 +5,7 @@ import { Officer } from '../../models/User';
 import { AuthRequest } from '../../middleware/auth';
 import { z } from 'zod';
 
-const updateStatusSchema = z.object({
-  status: z.enum(['ACCEPTED', 'REJECTED', 'EN_ROUTE', 'ON_SCENE', 'COMPLETED']),
-});
+import { updateStatusSchema, createDispatchSchema } from '@securenet/shared';
 
 export const respondToDispatch = async (req: AuthRequest, res: Response) => {
   try {
@@ -51,10 +49,7 @@ export const respondToDispatch = async (req: AuthRequest, res: Response) => {
   }
 };
 
-const createDispatchSchema = z.object({
-  incidentId: z.string(),
-  unitType: z.enum(['POLICE', 'MEDICAL', 'FIRE']),
-});
+
 
 export const createDispatch = async (req: AuthRequest, res: Response) => {
   try {

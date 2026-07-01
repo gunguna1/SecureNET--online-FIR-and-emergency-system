@@ -3,17 +3,7 @@ import { Complaint, ComplaintType, Priority, ComplaintStatus } from '../../model
 import { AuthRequest } from '../../middleware/auth';
 import { z } from 'zod';
 
-const createComplaintSchema = z.object({
-  type: z.nativeEnum(ComplaintType),
-  title: z.string().min(5),
-  description: z.string().min(20),
-  incidentDate: z.string().datetime(),
-  location: z.object({
-    coordinates: z.tuple([z.number(), z.number()]),
-    address: z.string().optional(),
-  }),
-  evidenceUrls: z.array(z.string()).optional(),
-});
+import { createComplaintSchema } from '@securenet/shared';
 
 // Auto-score priority based on type and keywords
 const calculatePriority = (type: ComplaintType, description: string): Priority => {
@@ -41,7 +31,7 @@ export const createComplaint = async (req: AuthRequest, res: Response) => {
   try {
     const validatedData = createComplaintSchema.parse(req.body);
     
-    const priority = calculatePriority(validatedData.type, validatedData.description);
+    const priority = calculatePriority(validatedData.type as ComplaintType, validatedData.description);
     
     const complaint = await Complaint.create({
       ...validatedData,

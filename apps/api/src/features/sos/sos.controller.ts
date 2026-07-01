@@ -7,10 +7,7 @@ import { AuthRequest } from '../../middleware/auth';
 import { z } from 'zod';
 import { getIO } from '../../sockets/socket';
 
-const createSosSchema = z.object({
-  coordinates: z.tuple([z.number(), z.number()]),
-  servicesRequired: z.array(z.enum(['POLICE', 'AMBULANCE', 'FIRE'])).min(1),
-});
+import { createSosSchema } from '@securenet/shared';
 
 // Helper for Smart Dispatch
 const dispatchUnit = async (incidentId: any, unitId: any, unitType: 'POLICE' | 'AMBULANCE' | 'FIRE', etaMinutes: number) => {

@@ -196,7 +196,6 @@ export const getTopHeroes = async (req: Request, res: Response) => {
     res.status(200).json({ success: true, data: heroesList });
   } catch (error) {
     console.error('Heroes error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    res.status(500).json({ success: false, message: 'Server error :' });
   }
 };
-// jai baba kii

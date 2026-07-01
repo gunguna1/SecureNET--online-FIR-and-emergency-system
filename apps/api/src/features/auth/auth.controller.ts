@@ -4,19 +4,7 @@ import { User, Citizen, Role } from '../../models/User';
 import { generateToken } from '../../utils/jwt';
 import { z } from 'zod';
 
-const registerSchema = z.object({
-  firstName: z.string().min(2),
-  lastName: z.string().min(2),
-  email: z.string().email(),
-  phone: z.string().min(10),
-  password: z.string().min(6),
-  role: z.nativeEnum(Role).optional(),
-});
-
-const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string(),
-});
+import { registerSchema, loginSchema, updateProfileSchema } from '@securenet/shared';
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -144,12 +132,7 @@ export const getMe = async (req: any, res: Response) => {
   }
 };
 
-const updateProfileSchema = z.object({
-  firstName: z.string().min(2).optional(),
-  lastName: z.string().min(2).optional(),
-  phone: z.string().min(10).optional(),
-  password: z.string().min(6).optional(),
-});
+
 
 export const updateProfile = async (req: any, res: Response) => {
   try {

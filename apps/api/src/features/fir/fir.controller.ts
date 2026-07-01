@@ -5,13 +5,7 @@ import { AuthRequest } from '../../middleware/auth';
 import { z } from 'zod';
 import crypto from 'crypto';
 
-const createFIRSchema = z.object({
-  complaintId: z.string(),
-  accusedDetails: z.string().optional(),
-  incidentDetails: z.string(),
-  witnesses: z.array(z.string()).optional(),
-  officerRemarks: z.string().optional(),
-});
+import { createFIRSchema, aiDraftSchema } from '@securenet/shared';
 
 const generateFIRNumber = () => {
   const year = new Date().getFullYear();
@@ -153,9 +147,7 @@ export const exportFIRToPDF = async (req: AuthRequest, res: Response) => {
 
 import { GoogleGenAI, Type, Schema } from '@google/genai';
 
-const aiDraftSchema = z.object({
-  informalDescription: z.string().min(10),
-});
+
 
 export const generateAIDraft = async (req: AuthRequest, res: Response) => {
   try {
